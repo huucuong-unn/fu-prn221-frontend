@@ -1,0 +1,19 @@
+@import 'normalize.css';
+
+:root {
+    --primary: red;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    //font-family: ;
+    font-size: 14px !important;
+}
+
+body {
+    line-height: 1.5;
+    text-rendering: optimizeSpeed;
+}
