@@ -167,7 +167,7 @@ export function Sidebar() {
             <List component="nav">
                 <MainListItems />
                 <Divider sx={{ my: 1 }} />
-                {SecondaryListItems}
+                <SecondaryListItems />
             </List>
         </Drawer>
     );
