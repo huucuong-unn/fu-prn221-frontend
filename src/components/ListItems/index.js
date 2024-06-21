@@ -61,18 +61,25 @@ export const MainListItems = () => {
     );
 };
 
-export const SecondaryListItems = (
-    <React.Fragment>
-        <ListSubheader component="div" inset>
-            Saved reports
-        </ListSubheader>
-        <ListItemButton>
-            <ListItemIcon>
-                <AssignmentIcon />
-            </ListItemIcon>
-            <ListItemText primary="Current month" />
-        </ListItemButton>
-        <ListItemButton>
+export const SecondaryListItems = () => {
+    const navigate = useNavigate();
+
+    const handleNavigate = (path) => {
+        navigate(path);
+        window.scrollTo(0, 0); // Cuộn lên đầu trang
+    };
+    return (
+        <React.Fragment>
+            <ListSubheader component="div" inset>
+                Saved reports
+            </ListSubheader>
+            <ListItemButton onClick={() => handleNavigate('/return-policy')}>
+                <ListItemIcon>
+                    <AssignmentIcon />
+                </ListItemIcon>
+                <ListItemText primary="Return Policy" />
+            </ListItemButton>
+            {/* <ListItemButton>
             <ListItemIcon>
                 <AssignmentIcon />
             </ListItemIcon>
@@ -83,6 +90,7 @@ export const SecondaryListItems = (
                 <AssignmentIcon />
             </ListItemIcon>
             <ListItemText primary="Year-end sale" />
-        </ListItemButton>
-    </React.Fragment>
-);
+        </ListItemButton> */}
+        </React.Fragment>
+    );
+};
