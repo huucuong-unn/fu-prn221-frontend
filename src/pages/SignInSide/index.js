@@ -10,7 +10,6 @@ import TabPanel from '@mui/lab/TabPanel';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AccountAPI from '~/api/AccountAPI';
-import StorageService from '~/components/StorageService/storageService';
 
 import Logo from '~/assets/images/logo.png';
 
@@ -60,8 +59,6 @@ export default function SignInSide() {
 
             // Check if userInfo is not undefined or null
             if (userInfo) {
-                // Store user information in local storage
-                StorageService.setItem('userInfo', userInfo);
                 navigate('/');
             }
         } catch (error) {
@@ -73,7 +70,7 @@ export default function SignInSide() {
         <ThemeProvider theme={defaultTheme}>
             {showAlert && (
                 <Alert width="50%" variant="filled" severity="success">
-                    Registered Successfully
+                    Login Successfully
                 </Alert>
             )}
             <Grid container component="main" sx={{ height: '100vh' }}>
@@ -111,9 +108,7 @@ export default function SignInSide() {
                             <TabContext value={value}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <TabList onChange={handleChange} aria-label="lab API tabs example">
-                                        <Tab label="I'm a mentee" value="1" />
-                                        <Tab label="I'm a mentor" value="2" />
-                                        <Tab label="I'm a business" value="3" />
+                                        <Tab label="Jewellry system" value="1" />
                                     </TabList>
                                 </Box>
                                 <TabPanel value="1">
@@ -122,10 +117,10 @@ export default function SignInSide() {
                                             margin="normal"
                                             required
                                             fullWidth
-                                            id="emailOrUsername"
-                                            label="Email Or Username"
-                                            name="emailOrUsername"
-                                            autoComplete="emailOrUsername"
+                                            id="email"
+                                            label="Email"
+                                            name="email"
+                                            autoComplete="email"
                                             autoFocus
                                         />
                                         <TextField
@@ -142,96 +137,6 @@ export default function SignInSide() {
                                             Sign In
                                         </Button>
                                         <Divider>Or</Divider>
-                                        <Button variant="outlined" size="medium" fullWidth sx={{ mt: 3, mb: 2 }}>
-                                            Login with Google
-                                        </Button>
-                                        <Grid container>
-                                            <Grid item xs>
-                                                <Link to="/forgot-password" variant="body2">
-                                                    Forgot password?
-                                                </Link>
-                                            </Grid>
-                                            <Grid item>
-                                                <Link to="/sign-up" variant="body2">
-                                                    {"Don't have an account? Sign Up"}
-                                                </Link>
-                                            </Grid>
-                                        </Grid>
-                                        <Copyright sx={{ mt: 5 }} />
-                                    </Box>
-                                </TabPanel>
-                                <TabPanel value="2">
-                                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
-                                        <TextField
-                                            margin="normal"
-                                            required
-                                            fullWidth
-                                            id="email"
-                                            label="Email Address"
-                                            name="email"
-                                            autoComplete="email"
-                                            autoFocus
-                                        />
-                                        <TextField
-                                            margin="normal"
-                                            required
-                                            fullWidth
-                                            name="password"
-                                            label="Password"
-                                            type="password"
-                                            id="password"
-                                            autoComplete="current-password"
-                                        />
-                                        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                                            Sign In
-                                        </Button>
-                                        <Grid container>
-                                            <Grid item xs>
-                                                <Link href="#" variant="body2">
-                                                    Forgot password?
-                                                </Link>
-                                            </Grid>
-                                        </Grid>
-                                        <Copyright sx={{ mt: 5 }} />
-                                    </Box>
-                                </TabPanel>
-                                <TabPanel value="3">
-                                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
-                                        <TextField
-                                            margin="normal"
-                                            required
-                                            fullWidth
-                                            id="email"
-                                            label="Email Address"
-                                            name="email"
-                                            autoComplete="email"
-                                            autoFocus
-                                        />
-                                        <TextField
-                                            margin="normal"
-                                            required
-                                            fullWidth
-                                            name="password"
-                                            label="Password"
-                                            type="password"
-                                            id="password"
-                                            autoComplete="current-password"
-                                        />
-                                        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                                            Sign In
-                                        </Button>
-                                        <Grid container>
-                                            <Grid item xs>
-                                                <Link to="#" variant="body2">
-                                                    Forgot password?
-                                                </Link>
-                                            </Grid>
-                                            <Grid item>
-                                                <Link href="#" variant="body2">
-                                                    {"Don't have an account? Sign Up"}
-                                                </Link>
-                                            </Grid>
-                                        </Grid>
                                         <Copyright sx={{ mt: 5 }} />
                                     </Box>
                                 </TabPanel>

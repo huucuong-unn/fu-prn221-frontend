@@ -10,6 +10,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import LayersIcon from '@mui/icons-material/Layers';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import { Logout } from '@mui/icons-material';
 
 export const MainListItems = () => {
     const navigate = useNavigate();
@@ -27,11 +28,11 @@ export const MainListItems = () => {
                 </ListItemIcon>
                 <ListItemText primary="Dashboard" />
             </ListItemButton>
-            <ListItemButton onClick={() => handleNavigate('/admin/promotions')}>
+            <ListItemButton onClick={() => handleNavigate('/admin/orders')}>
                 <ListItemIcon>
                     <ShoppingCartIcon />
                 </ListItemIcon>
-                <ListItemText primary="Promotions" />
+                <ListItemText primary="Orders" />
             </ListItemButton>
             <ListItemButton onClick={() => handleNavigate('/admin/mentor')}>
                 <ListItemIcon>
@@ -68,6 +69,16 @@ export const SecondaryListItems = () => {
         navigate(path);
         window.scrollTo(0, 0); // Cuộn lên đầu trang
     };
+
+    const handleLogout = async (path) => {
+        try {
+            await AccountAPI.logout();
+            navigate(path);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     return (
         <React.Fragment>
             <ListSubheader component="div" inset>
@@ -78,6 +89,12 @@ export const SecondaryListItems = () => {
                     <AssignmentIcon />
                 </ListItemIcon>
                 <ListItemText primary="Return Policy" />
+            </ListItemButton>
+            <ListItemButton onClick={() => handleLogout('/sign-in')}>
+                <ListItemIcon>
+                    <Logout />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
             </ListItemButton>
         </React.Fragment>
     );

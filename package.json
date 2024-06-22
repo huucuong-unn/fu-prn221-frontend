@@ -1,6 +1,13 @@
 {
     "name": "prn-221-frontend",
     "version": "0.1.0",
+    "options": {
+        "allowedHosts": [
+            "localhost",
+            ".localhost"
+        ],
+        "proxy": "http://localhost:5036"
+    },
     "private": true,
     "dependencies": {
         "@babel/plugin-proposal-private-property-in-object": "7.21.0-placeholder-for-preset-env.2",
