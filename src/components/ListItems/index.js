@@ -27,11 +27,11 @@ export const MainListItems = () => {
                 </ListItemIcon>
                 <ListItemText primary="Dashboard" />
             </ListItemButton>
-            <ListItemButton onClick={() => handleNavigate('/admin/orders')}>
+            <ListItemButton onClick={() => handleNavigate('/admin/promotions')}>
                 <ListItemIcon>
                     <ShoppingCartIcon />
                 </ListItemIcon>
-                <ListItemText primary="Orders" />
+                <ListItemText primary="Promotions" />
             </ListItemButton>
             <ListItemButton onClick={() => handleNavigate('/admin/mentor')}>
                 <ListItemIcon>
@@ -79,18 +79,6 @@ export const SecondaryListItems = () => {
                 </ListItemIcon>
                 <ListItemText primary="Return Policy" />
             </ListItemButton>
-            {/* <ListItemButton>
-            <ListItemIcon>
-                <AssignmentIcon />
-            </ListItemIcon>
-            <ListItemText primary="Last quarter" />
-        </ListItemButton>
-        <ListItemButton>
-            <ListItemIcon>
-                <AssignmentIcon />
-            </ListItemIcon>
-            <ListItemText primary="Year-end sale" />
-        </ListItemButton> */}
         </React.Fragment>
     );
 };
