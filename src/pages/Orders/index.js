@@ -214,21 +214,20 @@ function AdOrder() {
         </style>
         <div class="invoice">
             <h1>Jewellry</h1>
-            <p>Tên khách hàng: ${order.customerName}</p>
-            <p>Số điện thoại: ${order.customerPhone}</p>
-            <p>Thời gian giao dịch: ${order.time}</p>
+            <p>Tên khách hàng: ${order?.customer?.name}</p>
+            <p>Số điện thoại: ${order?.customer?.phone}</p>
+            <p>Thời gian giao dịch: ${order?.createdDate}</p>
             <p>${order.id}</p>
             <h2>Danh sách sản phẩm:</h2>
         `;
 
         let total = 0;
-        order.items.forEach((item, index) => {
+        order?.orderItems?.forEach((item, index) => {
             html += `
-                <p>${index + 1}. ${item.productName} - Số lượng: ${item.quantity} - Giá: ${
-                item.price
-            } VND - Bảo hành: 3 tháng</p>
+                <p>${index + 1}. ${item.product?.name}(${item.product?.productType?.name}-${item.product?.weight}g) - Số lượng: ${item.quantity} - Giá: ${item.unitPrice
+                } VND - Bảo hành: 3 tháng</p>
             `;
-            total += item.quantity * item.price;
+            total += item.quantity * item.unitPrice;
         });
 
         let finalPrice = total - discount;
@@ -316,31 +315,32 @@ function AdOrder() {
                     </TableHead>
                     <TableBody>
                         {orderList.length > 0 &&
-                        orderList?.map((order) => (
-                            <TableRow
-                                key={order.id}
-                                sx={{
-                                    '&:last-child td, &:last-child th': { border: 0 },
-                                    '&:hover': {
-                                        cursor: 'pointer',
-                                    },
-                                }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {order.id}
-                                </TableCell>
-                                <TableCell component="th" scope="row">
-                                </TableCell>
-                                <TableCell align="left">{order.point}</TableCell>
-                                <TableCell align="left">                                    {order.totalAmount}đ
-                                </TableCell>
-                                <TableCell align="left">{order.createdDate}</TableCell>
-                                <TableCell align="left">
-                                    <Button onClick={() => printInvoice(order, discount)}>In hóa đơn</Button>{' '}
-                                    {/* Thêm nút này */}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                            orderList?.map((order) => (
+                                <TableRow
+                                    key={order.id}
+                                    sx={{
+                                        '&:last-child td, &:last-child th': { border: 0 },
+                                        '&:hover': {
+                                            cursor: 'pointer',
+                                        },
+                                    }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {order.id}
+                                    </TableCell>
+                                    <TableCell component="th" scope="row">
+                                        {order.customer.name}
+                                    </TableCell>
+                                    <TableCell align="left">{order.customer.phone}</TableCell>
+                                    <TableCell align="left">{order.totalAmount}đ
+                                    </TableCell>
+                                    <TableCell align="left">{order.createdDate}</TableCell>
+                                    <TableCell align="left">
+                                        <Button onClick={() => printInvoice(order, discount)}>In hóa đơn</Button>{' '}
+                                        {/* Thêm nút này */}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                     </TableBody>
                 </Table>
             </TableContainer>
