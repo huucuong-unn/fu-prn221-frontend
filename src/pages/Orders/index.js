@@ -16,6 +16,8 @@ import {
     Select,
     MenuItem,
     InputLabel,
+    Pagination,
+    PaginationItem,
 } from '@mui/material';
 
 import { useEffect, useState } from 'react';
@@ -26,6 +28,8 @@ import { create } from '@mui/material/styles/createTransitions';
 import ProductAPI from '~/api/ProductAPI';
 import { optionClasses } from '@mui/joy';
 import CustomizedHook from '~/components/CustomizedHook';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 function AdOrder() {
     const navigate = useNavigate();
@@ -40,6 +44,10 @@ function AdOrder() {
     const [orderList, setOrderList] = useState([]);
     const [totalPage, setTotalPage] = useState(0);
     const [count, setCount] = useState(0);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+    });
 
     useEffect(() => {
         const getAll = async () => {
@@ -94,6 +102,13 @@ function AdOrder() {
         const newProductIds = [...productIds];
         newProductIds[index] = e.target.value;
         setProductIds(newProductIds);
+    };
+
+    const handlePageChange = (event, value) => {
+        setPagination((prev) => ({
+            ...prev,
+            page: value,
+        }));
     };
 
     useEffect(() => {
@@ -235,15 +250,6 @@ function AdOrder() {
                 Create
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, paddingRight: 2 }}>
-                <TextField id="outlined-basic" label="Email..." variant="outlined" size="small" />
-                <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
-                    options={status}
-                    sx={{ width: 200 }}
-                    renderInput={(params) => <TextField {...params} label="Status" />}
-                    size="small"
-                />
                 <Box
                     sx={{
                         display: 'flex',
@@ -289,31 +295,28 @@ function AdOrder() {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                ID
+                                Order Number
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Amount
+                                Customer Name
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Point
+                                Phone
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Email
+                                Total
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Transaction Time
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Status
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                In hóa đơn
+                                Print out Invoice
                             </TableCell>{' '}
-                            {/* Thêm cột này */}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orders.map((order) => (
+                        {orderList.length > 0 &&
+                        orderList?.map((order) => (
                             <TableRow
                                 key={order.id}
                                 sx={{
@@ -327,17 +330,11 @@ function AdOrder() {
                                     {order.id}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
-                                    {order.amount}
                                 </TableCell>
                                 <TableCell align="left">{order.point}</TableCell>
-                                <TableCell align="left">{order.email}</TableCell>
-                                <TableCell align="left">{order.time}</TableCell>
-                                <TableCell align="left">
-                                    <Chip
-                                        label={order.status}
-                                        color={order.status === 'Success' ? 'success' : 'error'}
-                                    />
+                                <TableCell align="left">                                    {order.totalAmount}đ
                                 </TableCell>
+                                <TableCell align="left">{order.createdDate}</TableCell>
                                 <TableCell align="left">
                                     <Button onClick={() => printInvoice(order, discount)}>In hóa đơn</Button>{' '}
                                     {/* Thêm nút này */}
@@ -347,6 +344,16 @@ function AdOrder() {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
+                <Pagination
+                    count={totalPage} // Calculate the total number of pages
+                    page={pagination.page}
+                    onChange={handlePageChange}
+                    renderItem={(item) => (
+                        <PaginationItem slots={{ previous: ArrowBackIcon, next: ArrowForwardIcon }} {...item} />
+                    )}
+                />
+            </Box>
             <Modal open={isCreateModalOpen} onClose={handleCloseCreateModal}>
                 <Box
                     sx={{
@@ -399,26 +406,6 @@ function AdOrder() {
                                 mt: 2,
                             }}
                         >
-                            {/* {productIds.map((productId, index) => (
-                                <div key={index}>
-                                    <Autocomplete
-                                        disablePortal
-                                        options={searchProducts}
-                                        label={`Product ID ${index + 1}`}
-                                        getOptionLabel={(option) => option.productCode}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                label={`Product ID ${index + 1}`}
-                                                onChange={(e) => handleChange(e, index)}
-                                            />
-                                        )}
-                                        required
-                                    />
-                                    <Button onClick={() => handleRemoveInput(index)}>-</Button>
-                                </div>
-                            ))}
-                            <Button onClick={handleAddInput}>+</Button> */}
                             <CustomizedHook
                                 list={searchProducts}
                                 onValueSelected={handleSelectedValue}

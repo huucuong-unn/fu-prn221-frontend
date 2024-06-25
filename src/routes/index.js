@@ -17,7 +17,7 @@ const publicRoutes = [
     { path: '/forgot-password', component: ForgotPassword, layout: null },
     { path: '/return-policy', component: ReturnPolicy, layout: AdminLayout },
 
-    { path: '/orders', component: Orders, layout: AdminLayout },
+    { path: '/admin/orders', component: Orders, layout: AdminLayout },
 ];
 
 const privateRoutes = [];
