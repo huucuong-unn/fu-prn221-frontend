@@ -14,11 +14,7 @@ import {
     Button,
     Modal,
     Typography,
-    Avatar,
-    Chip,
 } from '@mui/material';
-
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 import { styled } from '@mui/system';
 

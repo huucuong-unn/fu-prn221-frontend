@@ -10,6 +10,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import LayersIcon from '@mui/icons-material/Layers';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import { Logout } from '@mui/icons-material';
 
 import AccountAPI from '~/api/AccountAPI';
@@ -36,11 +37,11 @@ export const MainListItems = () => {
                 </ListItemIcon>
                 <ListItemText primary="Orders" />
             </ListItemButton>
-            <ListItemButton onClick={() => handleNavigate('/admin/mentor')}>
+            <ListItemButton onClick={() => handleNavigate('/admin/promotions')}>
                 <ListItemIcon>
                     <PeopleIcon />
                 </ListItemIcon>
-                <ListItemText primary="Mentor" />
+                <ListItemText primary="Promotions" />
             </ListItemButton>
             <ListItemButton onClick={() => handleNavigate('/admin/mentee')}>
                 <ListItemIcon>
@@ -86,7 +87,13 @@ export const SecondaryListItems = () => {
             <ListSubheader component="div" inset>
                 Saved reports
             </ListSubheader>
-            <ListItemButton onClick={() => handleNavigate('/return-policy')}>
+            <ListItemButton onClick={() => handleNavigate('/admin/gold-price')}>
+                <ListItemIcon>
+                    <PriceChangeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Gold Price" />
+            </ListItemButton>
+            <ListItemButton onClick={() => handleNavigate('/admin/return-policy')}>
                 <ListItemIcon>
                     <AssignmentIcon />
                 </ListItemIcon>
