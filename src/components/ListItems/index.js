@@ -43,23 +43,17 @@ export const MainListItems = () => {
                 </ListItemIcon>
                 <ListItemText primary="Promotions" />
             </ListItemButton>
-            <ListItemButton onClick={() => handleNavigate('/admin/mentee')}>
+            <ListItemButton onClick={() => handleNavigate('/admin/counter')}>
                 <ListItemIcon>
                     <BarChartIcon />
                 </ListItemIcon>
-                <ListItemText primary="Mentee" />
+                <ListItemText primary="Counter" />
             </ListItemButton>
             <ListItemButton onClick={() => handleNavigate('/admin/campaign')}>
                 <ListItemIcon>
                     <LayersIcon />
                 </ListItemIcon>
-                <ListItemText primary="Campaign" />
-            </ListItemButton>
-            <ListItemButton onClick={() => handleNavigate('/admin/account')}>
-                <ListItemIcon>
-                    <LayersIcon />
-                </ListItemIcon>
-                <ListItemText primary="Account" />
+                <ListItemText primary="Product" />
             </ListItemButton>
         </React.Fragment>
     );

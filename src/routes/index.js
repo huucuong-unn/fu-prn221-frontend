@@ -8,6 +8,7 @@ import SignInSide from '~/pages/SignInSide';
 import SignUp from '~/pages/SignUp';
 import Orders from '~/pages/Orders';
 import GoldPrice from '~/pages/GoldPrice';
+import AdCounter from '~/pages/AdCounter';
 
 const publicRoutes = [
     { path: '/', component: Home, layout: AdminLayout },
@@ -18,6 +19,7 @@ const publicRoutes = [
     { path: '/forgot-password', component: ForgotPassword, layout: null },
     { path: '/admin/return-policy', component: ReturnPolicy, layout: AdminLayout },
     { path: '/admin/gold-price', component: GoldPrice, layout: AdminLayout },
+    { path: '/admin/counter', component: AdCounter, layout: AdminLayout },
 
     { path: '/admin/orders', component: Orders, layout: AdminLayout },
 ];
