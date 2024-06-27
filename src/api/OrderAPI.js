@@ -8,6 +8,11 @@ const OrderAPI = {
         const url = `/v1/order?page=${params.page}&size=${params.size}`;
         return axiosClient.get(url);
     },
+
+    getOrderById(orderId) {
+        const url = `/v1/order/${orderId}`;
+        return axiosClient.get(url);
+    },
 };
 
 export default OrderAPI;
