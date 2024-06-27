@@ -43,7 +43,7 @@ function AdOrder() {
         page: 1,
         limit: 10,
     });
-    const [orderCode, setOrderCode] = useState('');
+    const [orderCode, setOrderCode] = useState(null);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
