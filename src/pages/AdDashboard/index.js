@@ -8,11 +8,21 @@ import {
     TableHead,
     TableRow,
     Paper,
+    Grid,
+    CardContent,
+    Card,
 } from '@mui/material';
 
 import { BarChart, LineChart, PieChart, pieArcLabelClasses } from '@mui/x-charts';
+import { useEffect, useState } from 'react';
+import OrderAPI from '~/api/OrderAPI';
 
 function AdDashboard() {
+    const [statisticalOrderAndSalesAndProduct, setStatisticalOrderAndSalesAndProduct] = useState({});
+    const [dataForBarChart, setDataForBarChart] = useState([]);
+    const [dataForLineChart, setDataForLineChart] = useState([]);
+    const [dataForTop5Customer, setDataForTop5Customer] = useState([]);
+    const [data, setData] = useState([]);
     //Barchart
     const chartSettingForBarChart = {
         xAxis: [
@@ -26,86 +36,50 @@ function AdDashboard() {
 
     const datasetForBarChar = [
         {
-            london: 59,
-            paris: 57,
-            newYork: 86,
             seoul: 21,
             month: 'Jan',
         },
         {
-            london: 50,
-            paris: 52,
-            newYork: 78,
             seoul: 28,
             month: 'Fev',
         },
         {
-            london: 47,
-            paris: 53,
-            newYork: 106,
             seoul: 41,
             month: 'Mar',
         },
         {
-            london: 54,
-            paris: 56,
-            newYork: 92,
             seoul: 73,
             month: 'Apr',
         },
         {
-            london: 57,
-            paris: 69,
-            newYork: 92,
             seoul: 99,
             month: 'May',
         },
         {
-            london: 60,
-            paris: 63,
-            newYork: 103,
             seoul: 144,
             month: 'June',
         },
         {
-            london: 59,
-            paris: 60,
-            newYork: 105,
             seoul: 319,
             month: 'July',
         },
         {
-            london: 65,
-            paris: 60,
-            newYork: 106,
             seoul: 249,
             month: 'Aug',
         },
         {
-            london: 51,
-            paris: 51,
-            newYork: 95,
             seoul: 131,
             month: 'Sept',
         },
         {
-            london: 60,
-            paris: 65,
-            newYork: 97,
             seoul: 55,
             month: 'Oct',
         },
         {
-            london: 67,
-            paris: 64,
-            newYork: 76,
             seoul: 48,
             month: 'Nov',
         },
         {
-            london: 61,
-            paris: 70,
-            newYork: 103,
             seoul: 25,
             month: 'Dec',
         },
@@ -114,12 +88,12 @@ function AdDashboard() {
     const valueFormatter = (value) => `${value}`;
 
     //PieChart
-    const data = [
-        { label: 'Bracelet', value: 400, color: '#0088FE' },
-        { label: 'Ring', value: 300, color: '#00C49F' },
-        { label: 'Necklace', value: 300, color: '#FFBB28' },
-        { label: 'Ear-ring', value: 200, color: '#FF8042' },
-    ];
+    // const data = [
+    //     { label: 'Bracelet', value: 400, color: '#0088FE' },
+    //     { label: 'Ring', value: 300, color: '#00C49F' },
+    //     { label: 'Necklace', value: 300, color: '#FFBB28' },
+    //     { label: 'Ear-ring', value: 200, color: '#FF8042' },
+    // ];
 
     const sizing = {
         margin: { right: 5 },
@@ -127,6 +101,7 @@ function AdDashboard() {
         height: 400,
         legend: { hidden: true },
     };
+
     const TOTAL = data.map((item) => item.value).reduce((a, b) => a + b, 0);
 
     const getArcLabel = (params) => {
@@ -146,6 +121,89 @@ function AdDashboard() {
         createData(5, 356, 16.0, 49, 3.9),
     ];
 
+    useEffect(() => {
+        const getStatisticalOrderAndSalesAndProductFunc = async () => {
+            try {
+                const getStatisticalOrderAndSalesAndProductResponse =
+                    await OrderAPI.getStatisticalOrderAndSalesAndProduct();
+                setStatisticalOrderAndSalesAndProduct(getStatisticalOrderAndSalesAndProductResponse);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getStatisticalOrderAndSalesAndProductFunc();
+    }, []);
+
+    useEffect(() => {
+        const getMonthlyOrderCountFunc = async () => {
+            try {
+                const getMonthlyOrderCountResponse = await OrderAPI.GetMonthlyOrderCount();
+                setDataForBarChart(getMonthlyOrderCountResponse);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getMonthlyOrderCountFunc();
+    }, []);
+
+    useEffect(() => {
+        const orderDashboardForLineChart = async () => {
+            try {
+                const orderDashboardForLineChartResponse = await OrderAPI.OrderDashboardForLineChart();
+                const formattedData = [];
+                for (const key in orderDashboardForLineChartResponse) {
+                    formattedData.push({
+                        month: parseInt(key), // Chuyển key (tháng) thành số
+                        sales: orderDashboardForLineChartResponse[key],
+                    });
+                }
+                setDataForLineChart(formattedData);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        orderDashboardForLineChart();
+    }, []);
+
+    useEffect(() => {
+        const getTop5CustomersFunc = async () => {
+            try {
+                const getTop5CustomersResponse = await OrderAPI.GetTop5Customers();
+                setDataForTop5Customer(getTop5CustomersResponse);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getTop5CustomersFunc();
+    }, []);
+
+    useEffect(() => {
+        const getProductTypeWithTotalOrderFunc = async () => {
+            try {
+                const getProductTypeWithTotalOrderResponse = await OrderAPI.GetProductTypeWithTotalOrder();
+                const formattedData = getProductTypeWithTotalOrderResponse.map((item) => ({
+                    label: item.productTypeName,
+                    value: item.totalOrder,
+                    color: getRandomColor(),
+                }));
+
+                setData(formattedData);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getProductTypeWithTotalOrderFunc();
+    }, []);
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
     return (
         <Box
             sx={{
@@ -157,6 +215,76 @@ function AdDashboard() {
                 minHeight: '600px',
             }}
         >
+            <Grid container spacing={2}>
+                <Grid item xs={4}>
+                    <Card
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            '&:hover': {
+                                cursor: 'pointer',
+                            },
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <CardContent sx={{ flex: '1 0 auto' }}>
+                                <Typography component="div" variant="h5">
+                                    Number of Orders
+                                </Typography>
+                                <Typography variant="subtitle1" color="text.secondary" component="div">
+                                    {statisticalOrderAndSalesAndProduct.numberOfOrders}
+                                </Typography>
+                            </CardContent>
+                        </Box>
+                    </Card>
+                </Grid>
+                <Grid item xs={4}>
+                    <Card
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            '&:hover': {
+                                cursor: 'pointer',
+                            },
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <CardContent sx={{ flex: '1 0 auto' }}>
+                                <Typography component="div" variant="h5">
+                                    Sales
+                                </Typography>
+                                <Typography variant="subtitle1" color="text.secondary" component="div">
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                                        statisticalOrderAndSalesAndProduct.sales,
+                                    )}
+                                </Typography>
+                            </CardContent>
+                        </Box>
+                    </Card>
+                </Grid>
+                <Grid item xs={4}>
+                    <Card
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            '&:hover': {
+                                cursor: 'pointer',
+                            },
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <CardContent sx={{ flex: '1 0 auto' }}>
+                                <Typography component="div" variant="h5">
+                                    Products Available
+                                </Typography>
+                                <Typography variant="subtitle1" color="text.secondary" component="div">
+                                    {statisticalOrderAndSalesAndProduct.numberOfProduct}
+                                </Typography>
+                            </CardContent>
+                        </Box>
+                    </Card>
+                </Grid>
+            </Grid>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box
                     sx={{
@@ -170,14 +298,23 @@ function AdDashboard() {
                     }}
                 >
                     <LineChart
-                        xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
+                        xAxis={[{ data: dataForLineChart.map((item) => item.month) }]}
                         series={[
                             {
-                                data: [11, 5.5, 2, 8.5, 1.5, 5, 11, 5.5, 2, 8.5, 1.5, 5],
+                                data: dataForLineChart.map((item) => item.sales),
                             },
                         ]}
                         width={600}
                         height={400}
+                        options={{
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: (value) => new Intl.NumberFormat('vi-VN').format(value),
+                                    },
+                                },
+                            },
+                        }}
                     />
                     <Box sx={{ padding: 1 }}>
                         <Typography variant="h5">Monthly Revenue - [2024]</Typography>
@@ -195,9 +332,9 @@ function AdDashboard() {
                     }}
                 >
                     <BarChart
-                        dataset={datasetForBarChar}
+                        dataset={dataForBarChart}
                         yAxis={[{ scaleType: 'band', dataKey: 'month' }]}
-                        series={[{ dataKey: 'seoul', label: 'Order', valueFormatter }]}
+                        series={[{ dataKey: 'totalOrder', label: 'Order', valueFormatter }]}
                         layout="horizontal"
                         grid={{ vertical: true }}
                         {...chartSettingForBarChart}
@@ -297,14 +434,12 @@ function AdDashboard() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
-                                    <TableRow key={row.name} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell component="th" scope="row">
-                                            {row.name}
-                                        </TableCell>
-                                        <TableCell align="left">{row.calories}</TableCell>
-                                        <TableCell align="left">{row.fat}</TableCell>
-                                        <TableCell align="left">{row.fat}</TableCell>
+                                {dataForTop5Customer.map((customer, index) => (
+                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell scope="row">{index}</TableCell>
+                                        <TableCell scope="row">{customer.name}</TableCell>
+                                        <TableCell align="left">{customer.phoneNumber}</TableCell>
+                                        <TableCell align="left">{customer.totalOrder}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

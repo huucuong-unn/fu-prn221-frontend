@@ -10,17 +10,19 @@ import Orders from '~/pages/Orders';
 import GoldPrice from '~/pages/GoldPrice';
 import OrderDetailPage from '~/pages/OrderDetailPage';
 import AdCounter from '~/pages/AdCounter';
+import AdProduct from '~/pages/AdProduct';
 
 const publicRoutes = [
     { path: '/', component: Home, layout: AdminLayout },
     { path: '/admin/dashboard', component: AdDashboard, layout: AdminLayout },
     { path: '/admin/promotions', component: AdPromotion, layout: AdminLayout },
+    { path: '/admin/counter', component: AdCounter, layout: AdminLayout },
+    { path: '/admin/product', component: AdProduct, layout: AdminLayout },
+    { path: '/admin/return-policy', component: ReturnPolicy, layout: AdminLayout },
+    { path: '/admin/gold-price', component: GoldPrice, layout: AdminLayout },
     { path: '/sign-in', component: SignInSide, layout: null },
     { path: '/sign-up', component: SignUp, layout: null },
     { path: '/forgot-password', component: ForgotPassword, layout: null },
-    { path: '/admin/return-policy', component: ReturnPolicy, layout: AdminLayout },
-    { path: '/admin/gold-price', component: GoldPrice, layout: AdminLayout },
-    { path: '/admin/counter', component: AdCounter, layout: AdminLayout },
 
     { path: '/admin/orders', component: Orders, layout: AdminLayout },
     { path: '/admin/orders/:orderId', component: OrderDetailPage, layout: AdminLayout },
