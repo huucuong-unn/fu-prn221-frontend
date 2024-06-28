@@ -13,6 +13,11 @@ const OrderAPI = {
         const url = `/v1/order/${orderId}`;
         return axiosClient.get(url);
     },
+
+    searchOrders(params) {
+        const url = `/v1/order-search?page=${params.page}&size=${params.size}&orderCode=${params.orderCode}&startDate=${params.startDate}&endDate=${params.endDate}`;
+        return axiosClient.get(url);
+    },
 };
 
 export default OrderAPI;
