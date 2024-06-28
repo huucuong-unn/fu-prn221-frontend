@@ -33,7 +33,7 @@ function AdOrder() {
     const [productIds, setProductIds] = useState([]);
     const [customerName, setCustomerName] = useState();
     const [customerPhone, setCustomerPhone] = useState();
-    const [orderType, setOrderType] = useState('');
+    const [orderType, setOrderType] = useState('CustomerBuy');
     const [user, setUser] = useState();
     const [searchProducts, setSearchProducts] = useState([]);
     const [orderList, setOrderList] = useState([]);
@@ -43,9 +43,10 @@ function AdOrder() {
         page: 1,
         limit: 10,
     });
-    const [orderCode, setOrderCode] = useState(null);
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [orderCode, setOrderCode] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchOrders = async () => {
         try {
@@ -61,6 +62,7 @@ function AdOrder() {
             setTotalPage(getAllWithStatusActive.totalPage);
             setCount(getAllWithStatusActive.totalCount);
             console.log(getAllWithStatusActive);
+            setIsLoading(false)
         } catch (error) {
             console.log(error);
         }
@@ -134,7 +136,9 @@ function AdOrder() {
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
+        setOrderList([]);
         setProductIds([]);
+        fetchOrders();
     };
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -299,13 +303,16 @@ function AdOrder() {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Order Number
+                                Order Code
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Customer Name
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Phone
+                            </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                Order Type
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Total
@@ -319,7 +326,8 @@ function AdOrder() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orderList.length > 0 &&
+                        {isLoading ? (<p>Loading...</p>) :
+                        orderList.length > 0 &&
                             orderList.map((order) => (
                                 <TableRow
                                     key={order.id}
@@ -338,10 +346,11 @@ function AdOrder() {
                                         {order.customer.name}
                                     </TableCell>
                                     <TableCell align="left">{order.customer.phone}</TableCell>
+                                    <TableCell align="left">{order.orderType}</TableCell>
                                     <TableCell align="left">{order.totalAmount.toLocaleString()}đ</TableCell>
                                     <TableCell align="left">{new Date(order.createdDate).toLocaleString()}</TableCell>
                                     <TableCell align="left">
-                                        <Button onClick={(e) => { e.stopPropagation(); printInvoice(order, 0); }}>In hóa đơn</Button>
+                                        <Button onClick={(e) => { e.stopPropagation(); printInvoice(order, 0); }}>Print</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

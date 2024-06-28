@@ -46,7 +46,7 @@ function OrderDetailPage() {
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                 <Box>
-                    <Typography variant="h6">Order ID: {order.id}</Typography>
+                    <Typography variant="h6">Order Code: {order.id}</Typography>
                     <Typography variant="h6">Customer Name: {order.customer.name}</Typography>
                     <Typography variant="h6">Customer Phone: {order.customer.phone}</Typography>
                 </Box>
