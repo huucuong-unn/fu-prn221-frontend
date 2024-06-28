@@ -8,6 +8,7 @@ import SignInSide from '~/pages/SignInSide';
 import SignUp from '~/pages/SignUp';
 import Orders from '~/pages/Orders';
 import GoldPrice from '~/pages/GoldPrice';
+import OrderDetailPage from '~/pages/OrderDetailPage';
 import AdCounter from '~/pages/AdCounter';
 import AdProduct from '~/pages/AdProduct';
 
@@ -24,6 +25,8 @@ const publicRoutes = [
     { path: '/forgot-password', component: ForgotPassword, layout: null },
 
     { path: '/admin/orders', component: Orders, layout: AdminLayout },
+    { path: '/admin/orders/:orderId', component: OrderDetailPage, layout: AdminLayout },
+
 ];
 
 const privateRoutes = [];

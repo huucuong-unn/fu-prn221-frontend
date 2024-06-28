@@ -8,10 +8,8 @@ import {
     Paper,
     Box,
     TextField,
-    Autocomplete,
     Button,
     Typography,
-    Chip,
     Modal,
     Select,
     MenuItem,
@@ -24,9 +22,7 @@ import { useEffect, useState } from 'react';
 import AccountAPI from '~/api/AccountAPI';
 import OrderAPI from '~/api/OrderAPI';
 import { useNavigate } from 'react-router-dom';
-import { create } from '@mui/material/styles/createTransitions';
 import ProductAPI from '~/api/ProductAPI';
-import { optionClasses } from '@mui/joy';
 import CustomizedHook from '~/components/CustomizedHook';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -37,8 +33,7 @@ function AdOrder() {
     const [productIds, setProductIds] = useState([]);
     const [customerName, setCustomerName] = useState();
     const [customerPhone, setCustomerPhone] = useState();
-    const [orderType, setOrderType] = useState('');
-    // const [orders, setOrders] = useState([]);
+    const [orderType, setOrderType] = useState('CustomerBuy');
     const [user, setUser] = useState();
     const [searchProducts, setSearchProducts] = useState([]);
     const [orderList, setOrderList] = useState([]);
@@ -48,22 +43,34 @@ function AdOrder() {
         page: 1,
         limit: 10,
     });
+    const [orderCode, setOrderCode] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchOrders = async () => {
+        try {
+            const params = {
+                page: pagination.page,
+                size: pagination.limit,
+                orderCode,
+                startDate,
+                endDate,
+            };
+            const getAllWithStatusActive = await OrderAPI.searchOrders(params);
+            setOrderList(getAllWithStatusActive.listResult);
+            setTotalPage(getAllWithStatusActive.totalPage);
+            setCount(getAllWithStatusActive.totalCount);
+            console.log(getAllWithStatusActive);
+            setIsLoading(false)
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     useEffect(() => {
-        const getAll = async () => {
-            try {
-                const getAllWithStatusActive = await OrderAPI.getAll({ page: 1, size: 10 });
-                setOrderList(getAllWithStatusActive.listResult);
-                setTotalPage(getAllWithStatusActive.totalPage);
-                setCount(getAllWithStatusActive.totalCount);
-                console.log(getAllWithStatusActive);
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-        getAll();
-    }, []);
+        fetchOrders();
+    }, [pagination.page]);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -111,35 +118,17 @@ function AdOrder() {
         }));
     };
 
+    const handleSearch = () => {
+        setPagination((prev) => ({
+            ...prev,
+            page: 1,
+        }));
+        fetchOrders();
+    };
+
     useEffect(() => {
         console.log('Product IDs:', productIds);
     }, [productIds]);
-
-    const orders = [
-        {
-            id: 'xxx-xxx-xxx-xxx',
-            customerName: 'Nguyễn Văn A',
-            customerPhone: '0123456789',
-            time: '24/06/2024 15:01:21',
-            items: [
-                {
-                    productName: 'Sản phẩm 1',
-                    quantity: 2,
-                    price: 500000,
-                },
-                {
-                    productName: 'Sản phẩm 2',
-                    quantity: 1,
-                    price: 300000,
-                },
-            ],
-        },
-        // Thêm các đơn hàng khác tại đây nếu cần
-    ];
-
-    const discount = 50000; // Giảm giá 50,000 VND
-
-    const status = ['Success', 'Fail'];
 
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
@@ -147,13 +136,14 @@ function AdOrder() {
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
+        setOrderList([]);
         setProductIds([]);
+        fetchOrders();
     };
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const handleSubmit = async () => {
-        // event.preventDefault();
         console.log('Customer Name:', customerName);
         console.log('Customer Phone:', customerPhone);
         console.log('Product IDs:', productIds);
@@ -183,12 +173,10 @@ function AdOrder() {
     };
 
     function handleSelectedValue(value) {
-        // Check if the value already exists in the productIds array
         setProductIds(value);
     }
 
     function handleRemoveSelectedValue(value) {
-        // Check if the value already exists in the productIds array
         setProductIds(productIds.filter((item) => item.productCode !== value));
     }
 
@@ -216,7 +204,7 @@ function AdOrder() {
             <h1>Jewellry</h1>
             <p>Tên khách hàng: ${order?.customer?.name}</p>
             <p>Số điện thoại: ${order?.customer?.phone}</p>
-            <p>Thời gian giao dịch: ${order?.createdDate}</p>
+            <p>Thời gian giao dịch: ${new Date(order?.createdDate).toLocaleString()}</p>
             <p>${order.id}</p>
             <h2>Danh sách sản phẩm:</h2>
         `;
@@ -224,16 +212,15 @@ function AdOrder() {
         let total = 0;
         order?.orderItems?.forEach((item, index) => {
             html += `
-                <p>${index + 1}. ${item.product?.name}(${item.product?.productType?.name}-${item.product?.weight}g) - Số lượng: ${item.quantity} - Giá: ${item.unitPrice
-                } VND - Bảo hành: 3 tháng</p>
+                <p>${index + 1}. ${item.product?.name} (${item.product?.productType?.name} - ${item.product?.weight}g) - Số lượng: ${item.quantity} - Giá: ${item.unitPrice.toLocaleString()} VND - Bảo hành: 3 tháng</p>
             `;
             total += item.quantity * item.unitPrice;
         });
 
         let finalPrice = total - discount;
         html += `
-            <p>Giảm giá: ${discount} VND</p>
-            <h2>Tổng cộng: ${finalPrice} VND</h2>
+            <p>Giảm giá: ${discount.toLocaleString()} VND</p>
+            <h2>Tổng cộng: ${finalPrice.toLocaleString()} VND</h2>
         </div>
         `;
 
@@ -249,6 +236,14 @@ function AdOrder() {
                 Create
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, paddingRight: 2 }}>
+                <TextField
+                    id="orderCode"
+                    label="Order code..."
+                    variant="outlined"
+                    size="small"
+                    value={orderCode}
+                    onChange={(e) => setOrderCode(e.target.value)}
+                />
                 <Box
                     sx={{
                         display: 'flex',
@@ -270,7 +265,14 @@ function AdOrder() {
                         }}
                     >
                         <Typography>Start date</Typography>
-                        <TextField id="outlined-basic" variant="outlined" size="small" type="date" />
+                        <TextField
+                            id="startDate"
+                            variant="outlined"
+                            size="small"
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
                     </Box>
                     <Typography>to</Typography>
                     <Box
@@ -282,10 +284,17 @@ function AdOrder() {
                         }}
                     >
                         <Typography>End date</Typography>
-                        <TextField id="outlined-basic" variant="outlined" size="small" type="date" />
+                        <TextField
+                            id="endDate"
+                            variant="outlined"
+                            size="small"
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
                     </Box>
                 </Box>
-                <Button variant="contained" size="medium">
+                <Button variant="contained" size="medium" onClick={handleSearch}>
                     Search
                 </Button>
             </Box>
@@ -294,13 +303,16 @@ function AdOrder() {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Order Number
+                                Order Code
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Customer Name
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Phone
+                            </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                Order Type
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Total
@@ -310,12 +322,13 @@ function AdOrder() {
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Print out Invoice
-                            </TableCell>{' '}
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orderList.length > 0 &&
-                            orderList?.map((order) => (
+                        {isLoading ? (<p>Loading...</p>) :
+                        orderList.length > 0 &&
+                            orderList.map((order) => (
                                 <TableRow
                                     key={order.id}
                                     sx={{
@@ -324,6 +337,7 @@ function AdOrder() {
                                             cursor: 'pointer',
                                         },
                                     }}
+                                    onClick={() => navigate(`/admin/orders/${order.id}`)}
                                 >
                                     <TableCell component="th" scope="row">
                                         {order.id}
@@ -332,12 +346,11 @@ function AdOrder() {
                                         {order.customer.name}
                                     </TableCell>
                                     <TableCell align="left">{order.customer.phone}</TableCell>
-                                    <TableCell align="left">{order.totalAmount}đ
-                                    </TableCell>
-                                    <TableCell align="left">{order.createdDate}</TableCell>
+                                    <TableCell align="left">{order.orderType}</TableCell>
+                                    <TableCell align="left">{order.totalAmount.toLocaleString()}đ</TableCell>
+                                    <TableCell align="left">{new Date(order.createdDate).toLocaleString()}</TableCell>
                                     <TableCell align="left">
-                                        <Button onClick={() => printInvoice(order, discount)}>In hóa đơn</Button>{' '}
-                                        {/* Thêm nút này */}
+                                        <Button onClick={(e) => { e.stopPropagation(); printInvoice(order, 0); }}>Print</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -346,7 +359,7 @@ function AdOrder() {
             </TableContainer>
             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                 <Pagination
-                    count={totalPage} // Calculate the total number of pages
+                    count={totalPage}
                     page={pagination.page}
                     onChange={handlePageChange}
                     renderItem={(item) => (

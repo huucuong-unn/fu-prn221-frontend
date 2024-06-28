@@ -8,7 +8,6 @@ const OrderAPI = {
         const url = `/v1/order?page=${params.page}&size=${params.size}`;
         return axiosClient.get(url);
     },
-
     getStatisticalOrderAndSalesAndProduct() {
         const url = `/v1/order/statistical-order-sales-product`;
         return axiosClient.get(url);
@@ -31,6 +30,15 @@ const OrderAPI = {
 
     GetProductTypeWithTotalOrder() {
         const url = `/v1/order/dashboard-pie-chart`;
+        return axiosClient.get(url);
+    },
+    getOrderById(orderId) {
+        const url = `/v1/order/${orderId}`;
+        return axiosClient.get(url);
+    },
+
+    searchOrders(params) {
+        const url = `/v1/order-search?page=${params.page}&size=${params.size}&orderCode=${params.orderCode}&startDate=${params.startDate}&endDate=${params.endDate}`;
         return axiosClient.get(url);
     },
 };
