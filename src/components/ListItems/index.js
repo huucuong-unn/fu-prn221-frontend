@@ -49,7 +49,7 @@ export const MainListItems = () => {
                 </ListItemIcon>
                 <ListItemText primary="Counter" />
             </ListItemButton>
-            <ListItemButton onClick={() => handleNavigate('/admin/campaign')}>
+            <ListItemButton onClick={() => handleNavigate('/admin/product')}>
                 <ListItemIcon>
                     <LayersIcon />
                 </ListItemIcon>
