@@ -206,7 +206,7 @@ export default function CustomizedHook({ list, onValueSelected, onValueRemoved }
                         const { key, ...optionProps } = getOptionProps({ option, index });
                         return (
                             <li key={key} {...optionProps}>
-                                <span>{option.productCode}</span>
+                                <span>{option.productCode} - {option.status}</span>
                                 <CheckIcon fontSize="small" />
                             </li>
                         );

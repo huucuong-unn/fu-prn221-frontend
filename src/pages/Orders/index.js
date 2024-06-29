@@ -59,7 +59,7 @@ function AdOrder() {
             };
             const getAllWithStatusActive = await OrderAPI.searchOrders(params);
             setOrderList(getAllWithStatusActive.listResult);
-            setTotalPage(getAllWithStatusActive.totalPage);
+            setTotalPage(getAllWithStatusActive.totalPages);
             setCount(getAllWithStatusActive.totalCount);
             console.log(getAllWithStatusActive);
             setIsLoading(false)
@@ -72,18 +72,15 @@ function AdOrder() {
         fetchOrders();
     }, [pagination.page]);
 
-    useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await ProductAPI.getAllActive();
+                const response = await ProductAPI.getProductForMakeOrder();
                 console.log('Product!!!!: ' + response);
                 setSearchProducts(response);
             } catch (error) {
                 console.log(error);
             }
         };
-        fetchProduct();
-    }, []);
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -132,6 +129,9 @@ function AdOrder() {
 
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
+        setProductIds([]);
+setSearchProducts([]);
+        fetchProduct();
     };
 
     const handleCloseCreateModal = () => {

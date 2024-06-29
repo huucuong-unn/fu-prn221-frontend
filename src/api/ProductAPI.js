@@ -1,7 +1,7 @@
 import axiosClient from './AxiosClient';
 const ProductAPI = {
-    getAllActive() {
-        return axiosClient.get(`/v1/product/product-active`);
+    getProductForMakeOrder() {
+        return axiosClient.get(`/v1/product/product-for-order`);
     },
 };
 

@@ -70,7 +70,7 @@ function OrderDetailPage() {
                     <TableBody>
                         {order.orderItems.map((item, index) => (
                             <TableRow key={index}>
-                                <TableCell>{item.product.name}</TableCell>
+                                <TableCell>{item.product.name}({item.product.productCode})</TableCell>
                                 <TableCell>{item.product.productType.name}</TableCell>
                                 <TableCell>{item.product.weight}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
