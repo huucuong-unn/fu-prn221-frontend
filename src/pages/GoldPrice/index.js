@@ -19,9 +19,10 @@ import {
 import { styled } from '@mui/system';
 
 import { useEffect, useState } from 'react';
+import MaterialAPI from '~/api/MaterialAPI';
 
 function GoldPrice() {
-    const [selectedMentee, setSelectedMentee] = useState(null);
+    const [materials, setMaterials] = useState([]);
 
     const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
         ({ theme }) => ({
@@ -71,6 +72,23 @@ function GoldPrice() {
         }),
     );
 
+    useEffect(() => {
+        const getAll = async () => {
+            try {
+                const getAllMaterialWithStatusActive = await MaterialAPI.getAllWithStatusActiveWithoutPaging();
+                setMaterials(getAllMaterialWithStatusActive);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getAll();
+    }, []);
+
+    useEffect(() => {
+        console.log(materials);
+    }, [materials]);
+
     const golds = [
         {
             id: 1,
@@ -92,10 +110,6 @@ function GoldPrice() {
         },
     ];
 
-    const handleRowClick = (mentee) => {
-        setSelectedMentee(mentee);
-    };
-
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
             <TableContainer component={Paper}>
@@ -105,7 +119,7 @@ function GoldPrice() {
                             fontWeight: 'bold',
                         }}
                     >
-                        Unit 1 = 1.000 VND
+                        Unit : VND
                     </caption>
                     <TableHead>
                         <TableRow>
@@ -122,40 +136,32 @@ function GoldPrice() {
                                 Ask Price
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Status
+                                Update Date
                             </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {golds.map((gold) => (
+                        {materials.map((material, index) => (
                             <TableRow
-                                key={gold.id}
+                                key={material.id}
                                 sx={{
                                     '&:last-child td, &:last-child th': { border: 0 },
                                     '&:hover': {
                                         cursor: 'pointer',
                                     },
                                 }}
-                                onClick={() => handleRowClick(gold)}
                             >
                                 <TableCell component="th" scope="row">
-                                    {gold.id}
+                                    {index + 1}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
-                                    {gold.name}
+                                    {material.name}
                                 </TableCell>
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
-                                    {gold.bidPrice}
+                                    {material.buyingPrice}
                                 </TableCell>
-                                <TableCell align="left">{gold.askPrice}</TableCell>
-                                <TableCell align="left">
-                                    {' '}
-                                    <FormControlLabel
-                                        control={<IOSSwitch sx={{ m: 1 }} defaultChecked />}
-                                        label="Active"
-                                        onClick={(event) => event.stopPropagation()} // Ngăn chặn sự kiện click lan ra
-                                    />
-                                </TableCell>
+                                <TableCell align="left">{material.salePrice}</TableCell>
+                                <TableCell align="left">{material.updateDate}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
