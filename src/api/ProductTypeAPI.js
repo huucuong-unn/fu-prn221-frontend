@@ -17,6 +17,12 @@ const ProductTypeAPI = {
         const authorizedConfig = this.addAuthorizationHeader({ params }, includeAuthorization);
         return axiosClient.get(url, authorizedConfig);
     },
+
+    getAllWithStatusActiveWithoutPaging(includeAuthorization = false) {
+        const url = '/v1/product-type-without-paging';
+        const authorizedConfig = this.addAuthorizationHeader(includeAuthorization);
+        return axiosClient.get(url, authorizedConfig);
+    },
 };
 
 export default ProductTypeAPI;
