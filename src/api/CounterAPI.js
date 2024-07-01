@@ -1,6 +1,6 @@
 import axiosClient from './AxiosClient';
 
-const ProductAPI = {
+const CounterAPI = {
     addAuthorizationHeader(config, includeAuthorization) {
         if (includeAuthorization) {
             const token = JSON.parse(localStorage.getItem('accessToken'));
@@ -12,15 +12,11 @@ const ProductAPI = {
         return config;
     },
 
-    getProductForMakeOrder() {
-        return axiosClient.get(`/v1/product/product-for-order`);
-    },
-
-    searchProduct(params, includeAuthorization = false) {
-        const url = '/v1/product/searchsort';
-        const authorizedConfig = this.addAuthorizationHeader({ params }, includeAuthorization);
+    getAllWithStatusActiveWithoutPaging(includeAuthorization = false) {
+        const url = '/v1/counter-without-paging';
+        const authorizedConfig = this.addAuthorizationHeader(includeAuthorization);
         return axiosClient.get(url, authorizedConfig);
     },
 };
 
-export default ProductAPI;
+export default CounterAPI;
