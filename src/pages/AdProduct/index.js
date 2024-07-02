@@ -215,6 +215,9 @@ function AdProduct() {
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Counter
                             </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                Status
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -240,6 +243,9 @@ function AdProduct() {
                                 <TableCell align="left">{product.weight}</TableCell>
                                 <TableCell align="left">{product.price}</TableCell>
                                 <TableCell align="left">{product.counterName}</TableCell>
+                                <TableCell align="left">
+                                    <Chip label={product.status} />
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
