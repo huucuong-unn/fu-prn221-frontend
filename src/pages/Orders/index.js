@@ -16,6 +16,7 @@ import {
     InputLabel,
     Pagination,
     PaginationItem,
+    Checkbox,
 } from '@mui/material';
 
 import { useEffect, useState } from 'react';
@@ -26,6 +27,7 @@ import ProductAPI from '~/api/ProductAPI';
 import CustomizedHook from '~/components/CustomizedHook';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CustomerAPI from '~/api/CustomerAPI';
 
 function AdOrder() {
     const navigate = useNavigate();
@@ -47,6 +49,9 @@ function AdOrder() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [points, setPoints] = useState();
+    const [usePoint, setUsePoint] = useState(false); 
+
 
     const fetchOrders = async () => {
         try {
@@ -132,12 +137,18 @@ function AdOrder() {
         setProductIds([]);
 setSearchProducts([]);
         fetchProduct();
+        setPoints();
+        setUsePoint(false);
+        setCustomerName();
+
     };
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
         setOrderList([]);
         setProductIds([]);
+        setCustomerName();
+        setPoints();
         fetchOrders();
     };
 
@@ -161,6 +172,7 @@ setSearchProducts([]);
                 createdDate: new Date().toISOString(),
                 updatedDate: new Date().toISOString(),
                 totalAmount: 0,
+                isUsePoint: usePoint,
             });
             window.alert('Create order successfully');
             productCodes = [];
@@ -180,7 +192,7 @@ setSearchProducts([]);
         setProductIds(productIds.filter((item) => item.productCode !== value));
     }
 
-    function printInvoice(order, discount) {
+    function printInvoice(order) {
         const newWindow = window.open('', '_blank');
 
         let html = `
@@ -217,7 +229,9 @@ setSearchProducts([]);
             total += item.quantity * item.unitPrice;
         });
 
-        let finalPrice = total - discount;
+
+        let finalPrice = order.totalAmount;
+        let discount = total - finalPrice;
         html += `
             <p>Giảm giá: ${discount.toLocaleString()} VND</p>
             <h2>Tổng cộng: ${finalPrice.toLocaleString()} VND</h2>
@@ -230,9 +244,32 @@ setSearchProducts([]);
         newWindow.print();
     }
 
+    const handleCheckPoints = async () => {
+        try {
+            if(customerPhone.isEmpty || customerPhone == null || customerPhone == '') return;
+            const response = await CustomerAPI.getByPhone(customerPhone);
+            setPoints(response.point);
+            setCustomerName(response.name)
+        } catch (error) {
+            console.error('Error fetching points:', error);
+        }
+    };
+
+    // const getDiscountOptions = (points) => {
+    //     const options = [];
+    //     if (points >= 30000) options.push(3);
+    //     if (points >= 50000) options.push(5);
+    //     if (points >= 100000) options.push(10);
+    //     return options;
+    // };
+
+    useEffect(() => {
+        console.log('Use point:', usePoint);
+    }, [usePoint]);
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
-            <Button variant="contained" size="medium" onClick={handleOpenCreateModal}>
+            <Button variant="contained" size="medium" onClick={handleOpenCreateModal} >
                 Create
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, paddingRight: 2 }}>
@@ -400,6 +437,8 @@ setSearchProducts([]);
                                 sx={{ flex: 1 }}
                                 required
                                 onChange={(e) => setCustomerName(e.target.value)}
+                                value={customerName}
+                                focused
                             />
                             <TextField
                                 id="customerPhone"
@@ -408,9 +447,19 @@ setSearchProducts([]);
                                 sx={{ flex: 1 }}
                                 required
                                 onChange={(e) => setCustomerPhone(e.target.value)}
+                                focused
                             />
+                        <Button variant="contained" onClick={handleCheckPoints}>
+                            Check
+                        </Button>
+                    </Box>
+                    {points !== null && (
+                        <Box mt={2}>
+                            <InputLabel>Points: {points}</InputLabel>
                         </Box>
-                        <Box
+                    )}  
+                    <Checkbox onChange={() => {setUsePoint(!usePoint); }} /><InputLabel>Use points</InputLabel>
+                    <Box
                             sx={{
                                 display: 'flex',
                                 justifyContent: 'center',
