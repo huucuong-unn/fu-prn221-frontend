@@ -11,7 +11,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AccountAPI from '~/api/AccountAPI';
 
-import Logo from '~/assets/images/logo.png';
+import Logo from '~/assets/images/newlogo.png';
 
 function Copyright(props) {
     return (
@@ -86,10 +86,10 @@ export default function SignInSide() {
                         backgroundColor: (t) => (t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900]),
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
-                        background: 'linear-gradient(180deg, #9CEE8D, #0B749C)',
+                        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
                     }}
                 >
-                    <img src={Logo} style={{ width: 150, height: 150, margin: '37%' }} alt="Logo" />
+                    <img src={Logo} style={{ width: 250, height: 150, margin: '37%' }} alt="Logo" />
                 </Grid>
                 <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
                     <Box
