@@ -19,6 +19,8 @@ import {
 import { styled } from '@mui/system';
 
 import { useEffect, useState } from 'react';
+import AccountAPI from '~/api/AccountAPI';
+import PromotionAPI from '~/api/PromotionAPI';
 
 function AdPromotion() {
     const [selectedMentee, setSelectedMentee] = useState(null);
@@ -26,6 +28,7 @@ function AdPromotion() {
     const [isNameValid, setIsNameValid] = useState(true);
     const [isValueValid, setIsValueValid] = useState(true);
     const [isDescriptionValid, setIsDescriptionValid] = useState(true);
+    const [user, setUser] = useState();
 
     const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
         ({ theme }) => ({
@@ -75,59 +78,73 @@ function AdPromotion() {
         }),
     );
 
-    const promotions = [
-        {
-            id: 1,
-            name: 'Big sale october',
-            description:
-                'Passionate about technology and its social impact. Over 10 years experience delivering successful products in healthcare, eCommerce, digital media and international fundraising. Strong focus on product, user-centricity, UX and lean processes. Interested in Zen and Stoic philosophy. Enjoy deep thinking and deep work.',
-            discount: '10%',
-            startDate: '31/10/2003',
-            endDate: '1/1/2003',
-        },
-        {
-            id: 2,
-            name: 'Big sale october',
-            description: 'Promotion description',
-            discount: '10%',
-            startDate: '31/10/2003',
-            endDate: '1/1/2003',
-        },
-        {
-            id: 3,
-            name: 'Big sale october',
-            description: 'Promotion description',
-            discount: '10%',
-            startDate: '31/10/2003',
-            endDate: '1/1/2003',
-        },
-        {
-            id: 4,
-            name: 'Big sale october',
-            description: 'Promotion description',
-            discount: '10%',
-            startDate: '31/10/2003',
-            endDate: '1/1/2003',
-        },
-        {
-            id: 5,
-            name: 'Big sale october',
-            description: 'Promotion description',
-            discount: '10%',
-            startDate: '31/10/2003',
-            endDate: '1/1/2003',
-        },
-        {
-            id: 6,
-            name: 'Big sale october',
-            description: 'Promotion description',
-            discount: '10%',
-            startDate: '31/10/2003',
-            endDate: '1/1/2003',
-        },
-    ];
+    const [promotions, setPromotions] = useState([]);
+    const [promotionName, setPromotionName] = useState('');
+    const [statusSearch, setStatusSearch] = useState(null);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                fetchPromotion();
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUser();
+    }, []);
 
-    const status = ['Active', 'Inactive'];
+    const handleSearch = async () => {
+        try {
+            const params = {
+                promotionName: promotionName,
+                status: statusSearch,
+                startDate: startDate,
+                endDate: endDate,
+                page: 1,
+                limit: 100,
+            };
+            const response = await PromotionAPI.getAllForAdmin(params);
+            setPromotions(response.listResult);
+            console.log(response.data); // handle the response data
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    const fetchPromotion = async () => {
+        try {
+            const params = {
+                promotionName: '',
+                status: '',
+                startDate: null,
+                endDate: null,
+                page: 1,
+                limit: 10,
+            };
+            const response = await PromotionAPI.getAllForAdmin(params);
+            console.log(response);
+            console.log(user);
+            setPromotions(response.listResult);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await AccountAPI.getLoggedUser();
+                console.log(response);
+                setUser(response);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const status = ['ACTIVE', 'INACTIVE'];
 
     const handleRowClick = (mentee) => {
         setSelectedMentee(mentee);
@@ -141,31 +158,53 @@ function AdPromotion() {
         setIsCreateModalOpen(false);
     };
 
-    const handleSubmit = (event) => {
+    const handleChangeStatus = async (id) => {
+        var result = await PromotionAPI.changeStatus(id);
+        console.log(result);
+        if (result === false) {
+            window.alert('There can be only 1 promotion active at the same time.');
+        }
+        await fetchPromotion();
+    };
+
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const name = event.target.name.value;
-        console.log(name);
-        const value = parseFloat(event.target.value.value);
-        const description = event.target.description.value;
+        const data = new FormData(event.currentTarget);
 
-        if (name.length < 5 || name.length > 50) {
+        if (data.get('name').length < 5 || data.get('name').length > 50) {
             setIsNameValid(false);
         } else {
             setIsNameValid(true);
         }
 
-        if (isNaN(value) || value < 0 || value > 1) {
+        if (isNaN(data.get('value')) || data.get('value') < 0 || data.get('value') > 1) {
             setIsValueValid(false);
         } else {
             setIsValueValid(true);
         }
 
-        if (description.length < 5 || description.length > 100) {
+        if (data.get('description').length < 5 || data.get('description').length > 100) {
             setIsDescriptionValid(false);
         } else {
             setIsDescriptionValid(true);
         }
+        const promotionRequest = {
+            name: data.get('name'),
+            description: data.get('description'),
+            value: data.get('value'),
+            startDate: data.get('startDate'),
+            endDate: data.get('endDate'),
+            status: null,
+            createDate: null,
+            updateDate: null,
+            updateBy: user.name,
+            createBy: user.name,
+        };
+        console.log(promotionRequest);
+        await PromotionAPI.createOrder(promotionRequest);
+        await handleCloseCreateModal();
+        fetchPromotion();
     };
 
     useEffect(() => {
@@ -179,13 +218,22 @@ function AdPromotion() {
                     Create
                 </Button>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, paddingRight: 2 }}>
-                    <TextField id="outlined-basic" label="Promotion name..." variant="outlined" size="small" />
+                    <TextField
+                        id="outlined-basic"
+                        label="Promotion name..."
+                        variant="outlined"
+                        size="small"
+                        value={promotionName}
+                        onChange={(e) => setPromotionName(e.target.value)}
+                    />
                     <Autocomplete
                         disablePortal
                         id="combo-box-demo"
                         options={status}
+                        sx={{ width: 150 }}
                         renderInput={(params) => <TextField {...params} label="Status" />}
                         size="small"
+                        onChange={(event, newValue) => setStatusSearch(newValue)}
                     />
                     <Box
                         sx={{
@@ -207,7 +255,14 @@ function AdPromotion() {
                             }}
                         >
                             <Typography>Start date</Typography>
-                            <TextField id="outlined-basic" variant="outlined" size="small" type="date" />
+                            <TextField
+                                id="outlined-basic"
+                                variant="outlined"
+                                size="small"
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
                         </Box>
                         <Typography>to</Typography>
                         <Box
@@ -219,10 +274,17 @@ function AdPromotion() {
                             }}
                         >
                             <Typography>End date</Typography>
-                            <TextField id="outlined-basic" variant="outlined" size="small" type="date" />
+                            <TextField
+                                id="outlined-basic"
+                                variant="outlined"
+                                size="small"
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
                         </Box>
                     </Box>
-                    <Button variant="contained" size="medium">
+                    <Button variant="contained" size="medium" onClick={() => handleSearch()}>
                         Search
                     </Button>
                 </Box>
@@ -275,15 +337,16 @@ function AdPromotion() {
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
                                     {promotion.description}
                                 </TableCell>
-                                <TableCell align="left">{promotion.discount}</TableCell>
+                                <TableCell align="left">{promotion.value}</TableCell>
                                 <TableCell align="left">{promotion.startDate}</TableCell>
                                 <TableCell align="left">{promotion.endDate}</TableCell>
                                 <TableCell align="left">
                                     {' '}
                                     <FormControlLabel
-                                        control={<IOSSwitch sx={{ m: 1 }} defaultChecked />}
-                                        label="Active"
-                                        onClick={(event) => event.stopPropagation()} // Ngăn chặn sự kiện click lan ra
+                                        id={promotion.id}
+                                        control={<IOSSwitch sx={{ m: 1 }} checked={promotion.status === 'ACTIVE'} />}
+                                        label={promotion.status == 'ACTIVE' ? 'Active' : 'InActive'}
+                                        onClick={() => handleChangeStatus(promotion.id)} // Ngăn chặn sự kiện click lan ra
                                     />
                                 </TableCell>
                             </TableRow>
@@ -334,6 +397,7 @@ function AdPromotion() {
                         >
                             <TextField
                                 id="name"
+                                name="name"
                                 label="Name"
                                 variant="outlined"
                                 sx={{ flex: 1 }}
@@ -342,6 +406,7 @@ function AdPromotion() {
                             />
                             <TextField
                                 id="value"
+                                name="value"
                                 label="Value"
                                 variant="outlined"
                                 sx={{ flex: 1 }}
@@ -369,7 +434,13 @@ function AdPromotion() {
                                 }}
                             >
                                 <Typography>Start date</Typography>
-                                <TextField id="outlined-basic" variant="outlined" size="small" type="date" />
+                                <TextField
+                                    name="startDate"
+                                    id="outlined-basic"
+                                    variant="outlined"
+                                    size="small"
+                                    type="date"
+                                />
                             </Box>
                             <Typography>to</Typography>
                             <Box
@@ -381,11 +452,18 @@ function AdPromotion() {
                                 }}
                             >
                                 <Typography>End date</Typography>
-                                <TextField id="outlined-basic" variant="outlined" size="small" type="date" />
+                                <TextField
+                                    name="endDate"
+                                    id="outlined-basic"
+                                    variant="outlined"
+                                    size="small"
+                                    type="date"
+                                />
                             </Box>
                         </Box>
                         <TextField
                             id="description"
+                            name="description"
                             label="Description"
                             multiline
                             rows={5}
