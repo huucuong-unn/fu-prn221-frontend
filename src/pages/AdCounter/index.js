@@ -27,6 +27,13 @@ import { styled } from '@mui/system';
 
 import { useEffect, useState } from 'react';
 
+import getStaffData from '~/api/NEW/accountAPI';
+import getCounterData from '~/api/NEW/counterAPI';
+import getUserCounterData from '~/api/NEW/userCounterAPI';
+import { getCounterById, getStaffById } from '~/api/NEW/getByID';
+
+
+
 function AdCounter() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -37,6 +44,82 @@ function AdCounter() {
     const [isEmailValid, setIsEmailValid] = useState(true);
     const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
     const [isPasswordValid, setIsPasswordValid] = useState(true);
+    const [staffs, setStaffs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [counters, setCounters] = useState([]);
+    const [userCounters, setUserCounters] = useState([]);
+    const [newCounterName, setNewCounterName] = useState('');
+    const [currentCounterName, setCurrentCounterName] = useState('');
+    const [countersData, setCountersData] = useState([]);
+    const [staffsData, setStaffsData] = useState([]);
+
+    const handleOpenCounterModal = async () => {
+        setIsModalOpen(true);
+        try {
+            setLoading(true);
+            const userCounterData = await getUserCounterData(); // Fetch userCounter data
+
+            if (userCounterData.userCounters.length > 0) {
+                const counterPromises = userCounterData.userCounters.map(async (userCounter) => {
+                    const counterId = userCounter.counterId;
+                    const staffId = userCounter.staffId;
+
+                    // Fetch counter and staff details based on IDs
+                    const counterData = await getCounterById(counterId);
+                    const staffData = await getStaffById(staffId);
+
+                    setCurrentCounterName(counterData.name);
+
+                    return { counterData, staffData };
+                });
+
+                const results = await Promise.all(counterPromises);
+
+                // Separate countersData and staffsData from results
+                const fetchedCounters = results.map((result) => result.counterData);
+                const fetchedStaffs = results.map((result) => result.staffData);
+
+                setCountersData(fetchedCounters);
+                setStaffsData(fetchedStaffs);
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+            minimumFractionDigits: 0
+        }).format(value);
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [staffData, counterData, userCounterData] = await Promise.all([
+                    getStaffData(),
+                    getCounterData(),
+                    getUserCounterData(),
+                ]);
+                setStaffs(staffData.staffList);
+                setCounters(counterData);
+                setUserCounters(userCounterData.userCounters); // Assuming userCounters is the key in the returned object
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
         ({ theme }) => ({
@@ -123,6 +206,39 @@ function AdCounter() {
         setIsCreateModalOpen(true);
     };
 
+    const handleCreateCounter = async () => {
+        const newCounter = {
+            name: newCounterName,
+            income: 0,
+            status: "ACTIVE",
+            createDate: new Date().toISOString(),
+            createBy: "string",
+            updateDate: new Date().toISOString(),
+            updateBy: "string",
+        };
+
+        try {
+            const response = await fetch('http://localhost:5036/api/v1/counter/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newCounter),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create counter');
+            }
+
+            const createdCounter = await response.json();
+            setCounters((prevCounters) => [...prevCounters, createdCounter]);
+            setNewCounterName(''); // Clear the input field
+            handleCloseCreateModal(); // Close the modal
+        } catch (error) {
+            console.error('Error creating counter:', error);
+        }
+    };
+
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
     };
@@ -159,59 +275,9 @@ function AdCounter() {
         setIsModalOpen(false);
     };
 
-    const counters = [
-        {
-            name: 'Counter 1',
-            totalPrice: '$ 15',
-            status: 'ACTIVE',
-        },
-        {
-            name: 'Counter 2',
-            totalPrice: '$ 15',
-            status: 'ACTIVE',
-        },
-        {
-            name: 'Counter 3',
-            totalPrice: '$ 15',
-            status: 'ACTIVE',
-        },
-    ];
 
-    const staffs = [
-        {
-            id: 1,
-            name: 'Nguyen Thien Thanh',
-            email: 'nguyenthanh311003@gmail.com',
-            password: 'ronaldo2003',
-            phoneNumber: '0967709009',
-            workingAtCounter: 'Counter 1',
-            totalPrice: '$ 15',
-            role: 'Admin',
-            status: 'ACTIVE',
-        },
-        {
-            id: 2,
-            name: 'Le Cong Vinh',
-            email: 'nguyenthanh311003@gmail.com',
-            password: 'ronaldo2003',
-            phoneNumber: '0967709009',
-            workingAtCounter: null,
-            totalPrice: '$ 15',
-            role: 'Staff',
-            status: 'ACTIVE',
-        },
-        {
-            id: 3,
-            name: 'Le Huu Cuong',
-            email: 'nguyenthanh311003@gmail.com',
-            password: 'ronaldo2003',
-            phoneNumber: '0967709009',
-            workingAtCounter: 'Counter 1',
-            totalPrice: '$ 15',
-            role: 'staff',
-            status: 'ACTIVE',
-        },
-    ];
+
+
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 4 }}>
@@ -237,7 +303,7 @@ function AdCounter() {
                                         {counter.name}
                                     </Typography>
                                     <Typography variant="subtitle1" color="text.secondary" component="div">
-                                        {counter.totalPrice}
+                                        Income: {formatCurrency(counter.income)}
                                     </Typography>
                                 </CardContent>
                             </Box>
@@ -265,12 +331,6 @@ function AdCounter() {
                                 Email
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Password
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Phone Number
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Working at Counter
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
@@ -294,7 +354,7 @@ function AdCounter() {
                                 onClick={() => handleOpenModalForStaff()}
                             >
                                 <TableCell component="th" scope="row">
-                                    {staff.id}
+                                    {index + 1}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
                                     {staff.name}
@@ -302,8 +362,7 @@ function AdCounter() {
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
                                     {staff.email}
                                 </TableCell>
-                                <TableCell align="left">{staff.password}</TableCell>
-                                <TableCell align="left">{staff.phoneNumber}</TableCell>
+
                                 <TableCell align="left">
                                     {staff.workingAtCounter ? staff.workingAtCounter : 'N/A'}
                                 </TableCell>
@@ -347,7 +406,7 @@ function AdCounter() {
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 1 }}>
                         <Typography variant="h4" fontWeight="bold">
-                            List of Staff at Counter 1
+                            List of Staff at {currentCounterName}
                         </Typography>
                         <Button variant="contained" color="primary" onClick={handleOpenEditModal}>
                             Edit
@@ -364,7 +423,7 @@ function AdCounter() {
                         <Button variant="contained">Add</Button>
                     </Box>
                     <Grid container spacing={2}>
-                        {staffs.map((staff, index) => (
+                        {staffsData.map((staff, index) => (
                             <Grid item xs={4} key={index}>
                                 <Card
                                     sx={{
@@ -381,7 +440,7 @@ function AdCounter() {
                                         sx={{
                                             position: 'absolute',
                                             top: 5,
-                                            right: 5, // Thay đổi left: 5 thành right: 5
+                                            right: 5,
                                         }}
                                     >
                                         <CloseIcon />
@@ -444,10 +503,19 @@ function AdCounter() {
                         Create Counter
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-                        <TextField id="outlined-basic" label="Name..." variant="outlined" size="small" />
-                        <Button variant="contained" size="medium">
+                        <TextField
+                            id="outlined-basic"
+                            label="Name..."
+                            variant="outlined"
+                            size="small"
+                            value={newCounterName}
+                            onChange={(e) => setNewCounterName(e.target.value)}
+                        />
+
+                        <Button variant="contained" size="medium" onClick={handleCreateCounter}>
                             Create
                         </Button>
+
                     </Box>
                 </Box>
             </Modal>
