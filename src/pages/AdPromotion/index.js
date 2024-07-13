@@ -317,7 +317,7 @@ function AdPromotion() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {promotions.map((promotion) => (
+                        {promotions.map((promotion, index) => (
                             <TableRow
                                 key={promotion.id}
                                 sx={{
@@ -329,7 +329,7 @@ function AdPromotion() {
                                 onClick={() => handleRowClick(promotion)}
                             >
                                 <TableCell component="th" scope="row">
-                                    {promotion.id}
+                                    {index + 1}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
                                     {promotion.name}

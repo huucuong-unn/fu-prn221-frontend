@@ -13,7 +13,7 @@ import AdCounter from '~/pages/AdCounter';
 import AdProduct from '~/pages/AdProduct';
 
 const publicRoutes = [
-    { path: '/', component: Home, layout: AdminLayout },
+    { path: '/', component: AdDashboard, layout: AdminLayout },
     { path: '/admin/dashboard', component: AdDashboard, layout: AdminLayout },
     { path: '/admin/promotions', component: AdPromotion, layout: AdminLayout },
     { path: '/admin/counter', component: AdCounter, layout: AdminLayout },

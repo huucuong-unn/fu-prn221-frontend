@@ -75,16 +75,6 @@ export function NavbarAdmin() {
         setOpen(!open);
     };
 
-    function notificationsLabel(count) {
-        if (count === 0) {
-            return 'no notifications';
-        }
-        if (count > 99) {
-            return 'more than 99 notifications';
-        }
-        return `${count} notifications`;
-    }
-
     return (
         <AppBar position="absolute" open={open}>
             <Toolbar
@@ -105,11 +95,6 @@ export function NavbarAdmin() {
                     <MenuIcon />
                 </IconButton>
 
-                <IconButton color="inherit" aria-label={notificationsLabel(100)} onClick={handleOpenUserMenu}>
-                    <Badge badgeContent={100} color="secondary">
-                        <NotificationsIcon />
-                    </Badge>
-                </IconButton>
                 <Menu
                     sx={{ mt: '45px' }}
                     id="menu-appbar"
@@ -156,7 +141,7 @@ export function Sidebar() {
             >
                 <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" sx={{ textAlign: 'center' }}>
-                        Hi Admin
+
                     </Typography>
                 </Box>
                 <IconButton onClick={toggleDrawer}>

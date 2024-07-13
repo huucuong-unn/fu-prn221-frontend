@@ -136,7 +136,6 @@ export default function SignInSide() {
                                         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                                             Sign In
                                         </Button>
-                                        <Divider>Or</Divider>
                                         <Copyright sx={{ mt: 5 }} />
                                     </Box>
                                 </TabPanel>

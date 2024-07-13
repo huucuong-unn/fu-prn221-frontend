@@ -28,6 +28,8 @@ import CustomizedHook from '~/components/CustomizedHook';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CustomerAPI from '~/api/CustomerAPI';
+import PromotionAPI from '~/api/PromotionAPI';
+
 
 function AdOrder() {
     const navigate = useNavigate();
@@ -50,7 +52,8 @@ function AdOrder() {
     const [endDate, setEndDate] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [points, setPoints] = useState();
-    const [usePoint, setUsePoint] = useState(false); 
+    const [usePoint, setUsePoint] = useState(false);
+    const [promotion, setPromotion] = useState();
 
 
     const fetchOrders = async () => {
@@ -67,6 +70,18 @@ function AdOrder() {
             setTotalPage(getAllWithStatusActive.totalPages);
             setCount(getAllWithStatusActive.totalCount);
             console.log(getAllWithStatusActive);
+            const params2 = {
+                promotionName: '',
+                status: 'ACTIVE',
+                startDate: null,
+                endDate: null,
+                page: 1,
+                limit: 10,
+            };
+            const response = await PromotionAPI.getAllForAdmin(params2);
+            setPromotion(response.listResult[0]);
+            console.log('Promotion:', response);
+
             setIsLoading(false)
         } catch (error) {
             console.log(error);
@@ -77,15 +92,15 @@ function AdOrder() {
         fetchOrders();
     }, [pagination.page]);
 
-        const fetchProduct = async () => {
-            try {
-                const response = await ProductAPI.getProductForMakeOrder();
-                console.log('Product!!!!: ' + response);
-                setSearchProducts(response);
-            } catch (error) {
-                console.log(error);
-            }
-        };
+    const fetchProduct = async () => {
+        try {
+            const response = await ProductAPI.getProductForMakeOrder();
+            console.log('Product!!!!: ' + response);
+            setSearchProducts(response);
+        } catch (error) {
+            console.log(error);
+        }
+    };
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -98,20 +113,6 @@ function AdOrder() {
         };
         fetchUser();
     }, []);
-
-    const handleAddInput = () => {
-        setProductIds([...productIds, '']);
-    };
-
-    const handleRemoveInput = (indexToRemove) => {
-        setProductIds(productIds.filter((_, index) => index !== indexToRemove));
-    };
-
-    const handleChange = (e, index) => {
-        const newProductIds = [...productIds];
-        newProductIds[index] = e.target.value;
-        setProductIds(newProductIds);
-    };
 
     const handlePageChange = (event, value) => {
         setPagination((prev) => ({
@@ -135,7 +136,7 @@ function AdOrder() {
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
         setProductIds([]);
-setSearchProducts([]);
+        setSearchProducts([]);
         fetchProduct();
         setPoints();
         setUsePoint(false);
@@ -246,7 +247,7 @@ setSearchProducts([]);
 
     const handleCheckPoints = async () => {
         try {
-            if(customerPhone.isEmpty || customerPhone == null || customerPhone == '') return;
+            if (customerPhone.isEmpty || customerPhone == null || customerPhone == '') return;
             const response = await CustomerAPI.getByPhone(customerPhone);
             setPoints(response.point);
             setCustomerName(response.name)
@@ -269,71 +270,78 @@ setSearchProducts([]);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
-            <Button variant="contained" size="medium" onClick={handleOpenCreateModal} >
-                Create
-            </Button>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, paddingRight: 2 }}>
-                <TextField
-                    id="orderCode"
-                    label="Order code..."
-                    variant="outlined"
-                    size="small"
-                    value={orderCode}
-                    onChange={(e) => setOrderCode(e.target.value)}
-                />
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'end',
-                        justifyContent: 'center',
-                        gap: 2,
-                        border: '1px solid #ccc',
-                        borderRadius: 2,
-                        padding: 2,
-                        mt: 2,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'start',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Typography>Start date</Typography>
-                        <TextField
-                            id="startDate"
-                            variant="outlined"
-                            size="small"
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                        />
-                    </Box>
-                    <Typography>to</Typography>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'start',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Typography>End date</Typography>
-                        <TextField
-                            id="endDate"
-                            variant="outlined"
-                            size="small"
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                        />
-                    </Box>
-                </Box>
-                <Button variant="contained" size="medium" onClick={handleSearch}>
-                    Search
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+
+                <Button variant="contained" size="medium" onClick={handleOpenCreateModal} >
+                    Create
                 </Button>
+
+                <Box>
+                    <Typography variant="h5">Sale off {promotion?.name}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, paddingRight: 2 }}>
+                    <TextField
+                        id="orderCode"
+                        label="Order code..."
+                        variant="outlined"
+                        size="small"
+                        value={orderCode}
+                        onChange={(e) => setOrderCode(e.target.value)}
+                    />
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'end',
+                            justifyContent: 'center',
+                            gap: 2,
+                            border: '1px solid #ccc',
+                            borderRadius: 2,
+                            padding: 2,
+                            mt: 2,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'start',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Typography>Start date</Typography>
+                            <TextField
+                                id="startDate"
+                                variant="outlined"
+                                size="small"
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </Box>
+                        <Typography>to</Typography>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'start',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Typography>End date</Typography>
+                            <TextField
+                                id="endDate"
+                                variant="outlined"
+                                size="small"
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                        </Box>
+                    </Box>
+                    <Button variant="contained" size="medium" onClick={handleSearch}>
+                        Search
+                    </Button>
+                </Box>
             </Box>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -364,7 +372,7 @@ setSearchProducts([]);
                     </TableHead>
                     <TableBody>
                         {isLoading ? (<p>Loading...</p>) :
-                        orderList.length > 0 &&
+                            orderList.length > 0 &&
                             orderList.map((order) => (
                                 <TableRow
                                     key={order.id}
@@ -449,17 +457,17 @@ setSearchProducts([]);
                                 onChange={(e) => setCustomerPhone(e.target.value)}
                                 focused
                             />
-                        <Button variant="contained" onClick={handleCheckPoints}>
-                            Check
-                        </Button>
-                    </Box>
-                    {points !== null && (
-                        <Box mt={2}>
-                            <InputLabel>Points: {points}</InputLabel>
+                            <Button variant="contained" onClick={handleCheckPoints}>
+                                Check
+                            </Button>
                         </Box>
-                    )}  
-                    <Checkbox onChange={() => {setUsePoint(!usePoint); }} /><InputLabel>Use points</InputLabel>
-                    <Box
+                        {points !== null && (
+                            <Box mt={2}>
+                                <InputLabel>Points: {points}</InputLabel>
+                            </Box>
+                        )}
+                        <Checkbox onChange={() => { setUsePoint(!usePoint); }} /><InputLabel>Use points</InputLabel>
+                        <Box
                             sx={{
                                 display: 'flex',
                                 justifyContent: 'center',

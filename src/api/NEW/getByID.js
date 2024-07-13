@@ -14,7 +14,7 @@ export const getCounterById = async (counterId) => {
 
 export const getStaffById = async (staffId) => {
     try {
-        const response = await fetch(`http://localhost:5036/api/v1/staff/${staffId}`);
+        const response = await fetch(`http://localhost:5036/api/v1/user/${staffId}`);
         if (!response.ok) {
             throw new Error('Failed to fetch staff data');
         }

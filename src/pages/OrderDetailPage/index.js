@@ -38,12 +38,11 @@ function OrderDetailPage() {
 
     return (
         <Box sx={{ padding: 4 }}>
-            <Button variant="contained" onClick={() => navigate(-1)}>
+            <Button variant="contained" onClick={() => navigate(-1)} style={{ marginBottom: '30px' }}>
                 Back to Orders
             </Button>
-            <Typography variant="h4" sx={{ marginBottom: 2 }}>
-                Order Details
-            </Typography>
+            <br />
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                 <Box>
                     <Typography variant="h6">Order Code: {order.id}</Typography>
@@ -52,7 +51,7 @@ function OrderDetailPage() {
                 </Box>
                 <Box>
                     <Typography variant="h6">Transaction Time: {new Date(order.createdDate).toLocaleString()}</Typography>
-                    <Typography variant="h6">Total Amount: {order.totalAmount.toLocaleString()}đ</Typography>
+                    <Typography variant="h5" style={{ fontWeight: 'bold' }}>Total Amount: {order.totalAmount.toLocaleString()}đ</Typography>
                 </Box>
             </Box>
             <TableContainer component={Paper} sx={{ marginTop: 2 }}>
@@ -75,7 +74,7 @@ function OrderDetailPage() {
                                 <TableCell>{item.product.weight}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
                                 <TableCell>{item.unitPrice.toLocaleString()}</TableCell>
-                                <TableCell>{item.totalAmount.toLocaleString()}</TableCell>
+                                <TableCell>{item.totalAmount.toLocaleString()} </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

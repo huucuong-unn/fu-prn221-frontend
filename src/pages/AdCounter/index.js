@@ -108,9 +108,25 @@ function AdCounter() {
                     getCounterData(),
                     getUserCounterData(),
                 ]);
-                setStaffs(staffData.staffList);
                 setCounters(counterData);
+                for (let i = 0; i < userCounterData.userCounters.length; i++) {
+                    if (userCounterData.userCounters[i].status === 'ACTIVE') {
+                        const counterId = userCounterData.userCounters[i].counterId;
+                        const staffId = userCounterData.userCounters[i].staffId;
+                        const counter = await getCounterById(counterId);
+                        const staff = await getStaffById(staffId);
+                        console.log('Counter:', counter);
+                        console.log('Staff:', staff);
+                        for (let j = 0; j < staffData.staffList.length; j++) {
+                            if (staffData.staffList[j].id === staffId) {
+                                staffData.staffList[j].workingAtCounter = counter.name;
+                            }
+                        }
+                    }
+                }
                 setUserCounters(userCounterData.userCounters); // Assuming userCounters is the key in the returned object
+                setStaffs(staffData.staffList);
+
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -120,6 +136,8 @@ function AdCounter() {
 
         fetchData();
     }, []);
+
+
 
     const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
         ({ theme }) => ({
@@ -334,6 +352,9 @@ function AdCounter() {
                                 Working at Counter
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                Income
+                            </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Role
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
@@ -365,6 +386,9 @@ function AdCounter() {
 
                                 <TableCell align="left">
                                     {staff.workingAtCounter ? staff.workingAtCounter : 'N/A'}
+                                </TableCell>
+                                <TableCell align="left">
+                                    {staff.income ? staff.income : '0.00'}
                                 </TableCell>
                                 <TableCell align="left">
                                     <Chip
