@@ -17,6 +17,16 @@ const CounterAPI = {
         const authorizedConfig = this.addAuthorizationHeader(includeAuthorization);
         return axiosClient.get(url, authorizedConfig);
     },
+
+    update(id, data) {
+        const url = `/v1/counter/update/${id}`;
+        return axiosClient.put(url, data);
+    },
+
+    getById(id) {
+        const url = '/v1/counter/' + id;
+        return axiosClient.get(url);
+    }
 };
 
 export default CounterAPI;

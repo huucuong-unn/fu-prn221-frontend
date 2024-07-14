@@ -31,7 +31,8 @@ import getStaffData from '~/api/NEW/accountAPI';
 import getCounterData from '~/api/NEW/counterAPI';
 import getUserCounterData from '~/api/NEW/userCounterAPI';
 import { getCounterById, getStaffById } from '~/api/NEW/getByID';
-
+import UserCounterAPI from '~/api/UserCounterAPI';
+import CounterAPI from '~/api/CounterAPI';
 
 
 function AdCounter() {
@@ -53,6 +54,10 @@ function AdCounter() {
     const [currentCounterName, setCurrentCounterName] = useState('');
     const [countersData, setCountersData] = useState([]);
     const [staffsData, setStaffsData] = useState([]);
+    const [selectedCounterId, setSelectedCounterId] = useState(null);
+    const [selectedStaffId, setSelectedStaffId] = useState(null);
+    const [updateCounterName, setUpdateCounterName] = useState();
+
 
     const handleOpenCounterModal = async () => {
         setIsModalOpen(true);
@@ -285,16 +290,104 @@ function AdCounter() {
         setOpenConfirmModal(false);
     };
 
-    const handleOpenModal = () => {
+    const handleOpenModal = async (counterId) => {
+        setSelectedCounterId(counterId);
         setIsModalOpen(true);
+
+        const counterDataForName = await getCounterById(counterId);
+        setCurrentCounterName(counterDataForName.name);
+
+
+
+        try {
+            setLoading(true);
+            const userCounterData = await getUserCounterData(); // Fetch userCounter data
+            if (userCounterData.userCounters.length > 0) {
+                const counterPromises = userCounterData.userCounters
+                    .filter(userCounter => userCounter.counterId === counterId) // Filter based on the selected counterId
+                    .map(async (userCounter) => {
+                        const counterId = userCounter.counterId;
+                        const staffId = userCounter.staffId;
+
+                        // Fetch counter and staff details based on IDs
+                        const counterData = await getCounterById(counterId);
+                        const staffData = await getStaffById(staffId);
+
+                        return { counterData, staffData };
+                    });
+
+                const results = await Promise.all(counterPromises);
+
+                // Separate countersData and staffsData from results
+                const fetchedCounters = results.map((result) => result.counterData);
+                const fetchedStaffs = results.map((result) => result.staffData);
+
+                setCountersData(fetchedCounters);
+                setStaffsData(fetchedStaffs);
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setCurrentCounterName();
+
     };
 
+    const handleAddStaffToCounter = async (staffId, counterId) => {
+        console.log('staffId ' + staffId);
+        console.log('counterId ', counterId);
+        const userCounter = {
+            staffId: staffId,
+            counterId: counterId,
+            status: 'ACTIVE',
+        };
 
+        try {
+            const result = await UserCounterAPI.create({
+                staffId: staffId,
+                counterId: counterId,
+                status: 'ACTIVE',
+            }, false);
+            console.log(result);
+            window.alert('Add staff successfully');
 
+        } catch (e) {
+            console.log(e);
+        }
+
+        handleCloseModal();
+        window.location.reload();
+
+    };
+
+    const handleUpdateCounterName = async () => {
+        try {
+            console.log('updateCounterName: ', updateCounterName);
+            const updateCounter = await CounterAPI.getById(selectedCounterId);
+            const result = await CounterAPI.update(updateCounter.id, {
+                name: updateCounterName,
+                income: updateCounter.income,
+                createDate: updateCounter.createDate,
+                createBy: updateCounter.createBy,
+                updateDate: new Date().toISOString(),
+                updateBy: "admin",
+                status: updateCounter.status,
+            });
+            console.log(result);
+
+            window.alert('Update counter name successfully');
+            handleCloseEditModal();
+            window.location.reload();
+        } catch (e) {
+            console.log(e);
+        }
+
+    }
 
 
     return (
@@ -303,7 +396,7 @@ function AdCounter() {
                 Create Counter
             </Button>
             <Grid container spacing={2}>
-                {counters.map((counter, index) => (
+                {counters?.map((counter, index) => (
                     <Grid item xs={4} key={index}>
                         <Card
                             sx={{
@@ -313,22 +406,21 @@ function AdCounter() {
                                     cursor: 'pointer',
                                 },
                             }}
-                            onClick={() => handleOpenModal()}
+                            onClick={() => handleOpenModal(counter.id)} // Pass counter.id here
                         >
                             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flex: '1 0 auto' }}>
                                     <Typography component="div" variant="h5">
-                                        {counter.name}
+                                        {counter?.name}
                                     </Typography>
                                     <Typography variant="subtitle1" color="text.secondary" component="div">
-                                        Income: {formatCurrency(counter.income)}
+                                        Income: {formatCurrency(counter?.income)}
                                     </Typography>
                                 </CardContent>
                             </Box>
                             <FormControlLabel
-                                control={<IOSSwitch sx={{ m: 1 }} checked={counter.status === 'ACTIVE'} />}
-                                label={counter.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                                onClick={(event) => event.stopPropagation()}
+                                control={<IOSSwitch sx={{ m: 1 }} checked={counter?.status === 'ACTIVE'} />}
+                                label={counter?.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                             />
                         </Card>
                     </Grid>
@@ -340,7 +432,7 @@ function AdCounter() {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                ID
+                                No
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Name
@@ -363,7 +455,7 @@ function AdCounter() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {staffs.map((staff, index) => (
+                        {staffs?.map((staff, index) => (
                             <TableRow
                                 key={index}
                                 sx={{
@@ -378,17 +470,17 @@ function AdCounter() {
                                     {index + 1}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
-                                    {staff.name}
+                                    {staff?.name}
                                 </TableCell>
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
-                                    {staff.email}
+                                    {staff?.email}
                                 </TableCell>
 
                                 <TableCell align="left">
-                                    {staff.workingAtCounter ? staff.workingAtCounter : 'N/A'}
+                                    {staff?.workingAtCounter ? staff.workingAtCounter : 'None'}
                                 </TableCell>
                                 <TableCell align="left">
-                                    {staff.income ? staff.income : '0.00'}
+                                    {formatCurrency(staff?.income ? staff.income : '0.00')}
                                 </TableCell>
                                 <TableCell align="left">
                                     <Chip
@@ -400,12 +492,7 @@ function AdCounter() {
                                     />
                                 </TableCell>
                                 <TableCell align="left">
-                                    {' '}
-                                    <FormControlLabel
-                                        control={<IOSSwitch sx={{ m: 1 }} defaultChecked />}
-                                        label="Active"
-                                        onClick={(event) => event.stopPropagation()} // Ngăn chặn sự kiện click lan ra
-                                    />
+                                    {staff.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -442,12 +529,16 @@ function AdCounter() {
                             id="combo-box-demo"
                             sx={{ width: 200 }}
                             size="small"
+                            options={staffs || []} // Ensure options is always an array
+                            getOptionLabel={(option) => option.email || ''} // Define how to extract the label from options
                             renderInput={(params) => <TextField {...params} label="Add staff" />}
-                        />
-                        <Button variant="contained">Add</Button>
+                            onChange={(event, value) => {
+                                setSelectedStaffId(value ? value.id : null);
+                            }} />
+                        <Button variant="contained" onClick={() => handleAddStaffToCounter(selectedStaffId, selectedCounterId)}>Add</Button>
                     </Box>
                     <Grid container spacing={2}>
-                        {staffsData.map((staff, index) => (
+                        {staffsData?.map((staff, index) => (
                             <Grid item xs={4} key={index}>
                                 <Card
                                     sx={{
@@ -472,10 +563,10 @@ function AdCounter() {
                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                         <CardContent sx={{ flex: '1 0 auto' }}>
                                             <Typography component="div" variant="h5">
-                                                {staff.name}
+                                                {staff?.name}
                                             </Typography>
                                             <Typography variant="subtitle1" color="text.secondary" component="div">
-                                                {staff.totalPrice}
+                                                {formatCurrency(staff.income ? staff.income : '0.00')}
                                             </Typography>
                                         </CardContent>
                                     </Box>
@@ -560,8 +651,8 @@ function AdCounter() {
                         Update Counter Name
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-                        <TextField id="outlined-basic" label="Name..." variant="outlined" size="small" />
-                        <Button variant="contained" size="medium">
+                        <TextField id="outlined-basic" label="Name..." variant="outlined" size="small" onChange={(event, value) => setUpdateCounterName(event.target.value)} />
+                        <Button variant="contained" size="medium" onClick={() => handleUpdateCounterName()}>
                             Update
                         </Button>
                     </Box>
