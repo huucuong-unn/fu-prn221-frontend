@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { Button, TextField, Paper, Box, Grid, Typography, Divider, Tab, Alert } from '@mui/material';
+import { Button, TextField, Paper, Box, Grid, Typography, Alert,Tab } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import AccountAPI from '~/api/AccountAPI';
-
 import Logo from '~/assets/images/newlogo.png';
 
 function Copyright(props) {
@@ -27,12 +24,12 @@ function Copyright(props) {
 }
 
 // TODO remove, this demo shouldn't need to reset the theme.
-
 const defaultTheme = createTheme();
 
 export default function SignInSide() {
     const [value, setValue] = useState('1');
     const [showAlert, setShowAlert] = useState(false);
+    const [errors, setErrors] = useState({});
     const location = useLocation();
 
     useEffect(() => {
@@ -51,18 +48,41 @@ export default function SignInSide() {
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (event) => {
-        try {
-            event.preventDefault();
-            const data = new FormData(event.currentTarget);
-            const userInfo = await AccountAPI.login(data);
+    const validate = (data) => {
+        const errors = {};
+        const emailRegex = /\S+@\S+\.\S+/;
+        const passwordRegex = /.{6,}/;
 
-            // Check if userInfo is not undefined or null
-            if (userInfo) {
-                navigate('/');
+        if (!data.get('email')) {
+            errors.email = 'Vui lòng nhập email';
+        } else if (!emailRegex.test(data.get('email'))) {
+            errors.email = 'Email không hợp lệ';
+        }
+
+        if (!data.get('password')) {
+            errors.password = 'Vui lòng nhập mật khẩu';
+        } else if (!passwordRegex.test(data.get('password'))) {
+            errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+        }
+
+        return errors;
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const validationErrors = validate(data);
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+            try {
+                const userInfo = await AccountAPI.login(data);
+                if (userInfo) {
+                    navigate('/');
+                }
+            } catch (error) {
+                console.log(error);
             }
-        } catch (error) {
-            console.log(error);
         }
     };
 
@@ -81,7 +101,6 @@ export default function SignInSide() {
                     sm={4}
                     md={7}
                     sx={{
-                        // backgroundImage: 'url(https://source.unsplash.com/random?wallpapers)',
                         backgroundRepeat: 'no-repeat',
                         backgroundColor: (t) => (t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900]),
                         backgroundSize: 'cover',
@@ -122,6 +141,8 @@ export default function SignInSide() {
                                             name="email"
                                             autoComplete="email"
                                             autoFocus
+                                            error={Boolean(errors.email)}
+                                            helperText={errors.email}
                                         />
                                         <TextField
                                             margin="normal"
@@ -132,6 +153,8 @@ export default function SignInSide() {
                                             type="password"
                                             id="password"
                                             autoComplete="current-password"
+                                            error={Boolean(errors.password)}
+                                            helperText={errors.password}
                                         />
                                         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                                             Sign In
