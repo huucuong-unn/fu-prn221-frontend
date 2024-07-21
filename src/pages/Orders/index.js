@@ -89,6 +89,10 @@ function AdOrder() {
     };
 
     useEffect(() => {
+        console.log(orderList);
+    }, [orderList])
+
+    useEffect(() => {
         fetchOrders();
     }, [pagination.page]);
 
@@ -101,6 +105,7 @@ function AdOrder() {
             console.log(error);
         }
     };
+
     useEffect(() => {
         const fetchUser = async () => {
             try {

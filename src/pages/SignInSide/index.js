@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, TextField, Paper, Box, Grid, Typography, Alert,Tab } from '@mui/material';
+import { Button, TextField, Paper, Box, Grid, Typography, Alert, Tab } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import TabContext from '@mui/lab/TabContext';
@@ -57,12 +57,6 @@ export default function SignInSide() {
             errors.email = 'Vui lòng nhập email';
         } else if (!emailRegex.test(data.get('email'))) {
             errors.email = 'Email không hợp lệ';
-        }
-
-        if (!data.get('password')) {
-            errors.password = 'Vui lòng nhập mật khẩu';
-        } else if (!passwordRegex.test(data.get('password'))) {
-            errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
         }
 
         return errors;
@@ -153,8 +147,6 @@ export default function SignInSide() {
                                             type="password"
                                             id="password"
                                             autoComplete="current-password"
-                                            error={Boolean(errors.password)}
-                                            helperText={errors.password}
                                         />
                                         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                                             Sign In

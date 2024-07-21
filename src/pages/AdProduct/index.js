@@ -37,6 +37,7 @@ function AdProduct() {
     const [productTypeId, setProductTypeId] = useState();
     const [materialId, setMaterialId] = useState();
     const [counterId, setCounterId] = useState();
+    const [productStatusParams, setProductStatusParams] = useState();
     const [productCode, setProductCode] = useState();
     const [totalPage, setTotalPage] = useState(0);
     const [params, setParams] = useState({
@@ -44,10 +45,16 @@ function AdProduct() {
         productTypeId: null,
         materialId: null,
         counterId: null,
+        status: null,
         page: 1,
         size: 10,
     });
     const [products, setProducts] = useState([]);
+
+    const productStatus = [
+        "SALED",
+        "BUYBACK"
+    ]
 
     useEffect(() => {
         const getAllProductTypes = async () => {
@@ -101,8 +108,8 @@ function AdProduct() {
     }, [params]);
 
     useEffect(() => {
-        console.log(products);
-    }, [products]);
+        console.log(productStatusParams);
+    }, [productStatusParams]);
 
     const sortProductType = (selectedProductTypeId) => {
         setProductTypeId(selectedProductTypeId);
@@ -116,6 +123,10 @@ function AdProduct() {
         setCounterId(selectedCounterId);
     };
 
+    const sortProductStatus = (selectProductStatus) => {
+        setProductStatusParams(selectProductStatus);
+    };
+
     const handleSort = () => {
         setParams((prevParams) => ({
             ...prevParams,
@@ -123,6 +134,7 @@ function AdProduct() {
             productTypeId: productTypeId,
             materialId: materialId,
             counterId: counterId,
+            status: productStatusParams
         }));
     };
 
@@ -182,6 +194,19 @@ function AdProduct() {
                         sortCounter(selectedCounterlId);
                     }}
                     renderInput={(params) => <TextField {...params} label="Counter" />}
+                />
+                <Autocomplete
+                    disablePortal
+                    id="combo-box-demo"
+                    sx={{ width: 120 }}
+                    size="small"
+                    options={productStatus}
+                    getOptionLabel={(option) => option}
+                    onChange={(event, newValue) => {
+                        const selectProductStatus = newValue ? newValue : null;
+                        sortProductStatus(selectProductStatus);
+                    }}
+                    renderInput={(params) => <TextField {...params} label="Status" />}
                 />
                 <Button variant="contained" size="medium" onClick={handleSort}>
                     Search
@@ -244,7 +269,13 @@ function AdProduct() {
                                 <TableCell align="left">{product.price}</TableCell>
                                 <TableCell align="left">{product.counterName}</TableCell>
                                 <TableCell align="left">
-                                    <Chip label={product.status} />
+                                    <Chip label={product.status}
+                                        sx={{
+                                            backgroundColor: product.status === "SALED" ? 'green' : '#0000FF',
+                                            color: "white",
+                                            fontWeight: "bold"
+                                        }}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}
