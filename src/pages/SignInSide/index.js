@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { Button, TextField, Paper, Box, Grid, Typography, Alert } from '@mui/material';
+import { Button, TextField, Paper, Box, Grid, Typography, Alert,Tab } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Formik, Form, Field } from 'formik';
 import AccountAPI from '~/api/AccountAPI';
 import Logo from '~/assets/images/newlogo.png';
 
@@ -21,32 +23,14 @@ function Copyright(props) {
     );
 }
 
+// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-const validate = values => {
-    const errors = {};
-    const emailRegex = /\S+@\S+\.\S+/;
-    const passwordRegex = /.{6,}/;
-
-    if (!values.email) {
-        errors.email = 'Vui lòng nhập email';
-    } else if (!emailRegex.test(values.email)) {
-        errors.email = 'Email không hợp lệ';
-    }
-
-    if (!values.password) {
-        errors.password = 'Vui lòng nhập mật khẩu';
-    } else if (!passwordRegex.test(values.password)) {
-        errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
-
-    return errors;
-};
-
 export default function SignInSide() {
+    const [value, setValue] = useState('1');
     const [showAlert, setShowAlert] = useState(false);
+    const [errors, setErrors] = useState({});
     const location = useLocation();
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (location.state?.signupSuccess) {
@@ -58,17 +42,48 @@ export default function SignInSide() {
         }
     }, [location.state]);
 
-    const handleSubmit = async (values, { setSubmitting }) => {
-        try {
-            const userInfo = await AccountAPI.login(values);
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
 
-            if (userInfo) {
-                navigate('/');
-            }
-        } catch (error) {
-            console.log(error);
+    const navigate = useNavigate();
+
+    const validate = (data) => {
+        const errors = {};
+        const emailRegex = /\S+@\S+\.\S+/;
+        const passwordRegex = /.{6,}/;
+
+        if (!data.get('email')) {
+            errors.email = 'Vui lòng nhập email';
+        } else if (!emailRegex.test(data.get('email'))) {
+            errors.email = 'Email không hợp lệ';
         }
-        setSubmitting(false);
+
+        if (!data.get('password')) {
+            errors.password = 'Vui lòng nhập mật khẩu';
+        } else if (!passwordRegex.test(data.get('password'))) {
+            errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+        }
+
+        return errors;
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const validationErrors = validate(data);
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+            try {
+                const userInfo = await AccountAPI.login(data);
+                if (userInfo) {
+                    navigate('/');
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
     };
 
     return (
@@ -108,46 +123,47 @@ export default function SignInSide() {
                         <Typography component="h1" variant="h4">
                             Sign in
                         </Typography>
-                        <Formik
-                            initialValues={{ email: '', password: '' }}
-                            validate={validate}
-                            onSubmit={handleSubmit}
-                        >
-                            {({ errors, touched, isSubmitting }) => (
-                                <Form noValidate>
-                                    <Field
-                                        as={TextField}
-                                        margin="normal"
-                                        required
-                                        fullWidth
-                                        id="email"
-                                        label="Email"
-                                        name="email"
-                                        autoComplete="email"
-                                        autoFocus
-                                        error={touched.email && Boolean(errors.email)}
-                                        helperText={touched.email && errors.email}
-                                    />
-                                    <Field
-                                        as={TextField}
-                                        margin="normal"
-                                        required
-                                        fullWidth
-                                        name="password"
-                                        label="Password"
-                                        type="password"
-                                        id="password"
-                                        autoComplete="current-password"
-                                        error={touched.password && Boolean(errors.password)}
-                                        helperText={touched.password && errors.password}
-                                    />
-                                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={isSubmitting}>
-                                        Sign In
-                                    </Button>
-                                    <Copyright sx={{ mt: 5 }} />
-                                </Form>
-                            )}
-                        </Formik>
+                        <Box sx={{ width: '100%', typography: 'body1', mt: 5 }}>
+                            <TabContext value={value}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                    <TabList onChange={handleChange} aria-label="lab API tabs example">
+                                        <Tab label="Jewellry system" value="1" />
+                                    </TabList>
+                                </Box>
+                                <TabPanel value="1">
+                                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+                                        <TextField
+                                            margin="normal"
+                                            required
+                                            fullWidth
+                                            id="email"
+                                            label="Email"
+                                            name="email"
+                                            autoComplete="email"
+                                            autoFocus
+                                            error={Boolean(errors.email)}
+                                            helperText={errors.email}
+                                        />
+                                        <TextField
+                                            margin="normal"
+                                            required
+                                            fullWidth
+                                            name="password"
+                                            label="Password"
+                                            type="password"
+                                            id="password"
+                                            autoComplete="current-password"
+                                            error={Boolean(errors.password)}
+                                            helperText={errors.password}
+                                        />
+                                        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+                                            Sign In
+                                        </Button>
+                                        <Copyright sx={{ mt: 5 }} />
+                                    </Box>
+                                </TabPanel>
+                            </TabContext>
+                        </Box>
                     </Box>
                 </Grid>
             </Grid>
