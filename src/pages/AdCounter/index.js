@@ -19,6 +19,7 @@ import {
     Grid,
     IconButton,
     Chip,
+    CircularProgress,
 } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
@@ -27,10 +28,9 @@ import { styled } from '@mui/system';
 
 import { useEffect, useState } from 'react';
 
-import getStaffData from '~/api/NEW/accountAPI';
-import getCounterData from '~/api/NEW/counterAPI';
-import getUserCounterData from '~/api/NEW/userCounterAPI';
-import { getCounterById, getStaffById } from '~/api/NEW/getByID';
+
+import AccountAPI from '~/api/AccountAPI';
+import { getCounterById, getStaffById } from '~/api/OldMethod/getByID';
 import UserCounterAPI from '~/api/UserCounterAPI';
 import CounterAPI from '~/api/CounterAPI';
 
@@ -54,6 +54,7 @@ function AdCounter() {
     const [currentCounterName, setCurrentCounterName] = useState('');
     const [countersData, setCountersData] = useState([]);
     const [staffsData, setStaffsData] = useState([]);
+    const [staffModalData, setStaffsModalData] = useState([]);
     const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
     const [updateCounterName, setUpdateCounterName] = useState();
@@ -63,7 +64,7 @@ function AdCounter() {
         setIsModalOpen(true);
         try {
             setLoading(true);
-            const userCounterData = await getUserCounterData(); // Fetch userCounter data
+            const userCounterData = await AccountAPI.getUserCounterData(); // Fetch userCounter data
 
             if (userCounterData.userCounters.length > 0) {
                 const counterPromises = userCounterData.userCounters.map(async (userCounter) => {
@@ -108,29 +109,60 @@ function AdCounter() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [staffData, counterData, userCounterData] = await Promise.all([
-                    getStaffData(),
-                    getCounterData(),
-                    getUserCounterData(),
-                ]);
+                // Fetch data from APIs concurrently
+
+                    AccountAPI.getCounterData()
+                    AccountAPI.getUserCounterData()
+                // Extract data from responses
+                const staffData = await AccountAPI.getStaffData(); // Assuming 'listResult' is the key
+                const counterData = await AccountAPI.getCounterData();
+                const userCounterData = await AccountAPI.getUserCounterData();
+
+
+                // Log responses
+                console.log('Staff Data:', staffData);
+                console.log('Counter Data:', counterData);
+                console.log('User Counter Data:', userCounterData);
+
+                // Set state with the extracted data
+                setStaffs(staffData.listResult);
                 setCounters(counterData);
-                for (let i = 0; i < userCounterData.userCounters.length; i++) {
-                    if (userCounterData.userCounters[i].status === 'ACTIVE') {
-                        const counterId = userCounterData.userCounters[i].counterId;
-                        const staffId = userCounterData.userCounters[i].staffId;
-                        const counter = await getCounterById(counterId);
-                        const staff = await getStaffById(staffId);
+
+                setUserCounters(userCounterData.listResult);
+
+
+                const updatedStaffList = [];
+                // Process user counters to find active counters and corresponding staff
+
+                for (const userCounter of userCounterData) {
+                    if (userCounter.status === 'ACTIVE' || userCounter.status === 'active') {
+                        const { counterId, staffId } = userCounter;
+
+
+                        const counter =  (await AccountAPI.getCounterById(counterId)).data;
+                        const staff = (await AccountAPI.getStaffById(staffId)).data;
+
                         console.log('Counter:', counter);
                         console.log('Staff:', staff);
-                        for (let j = 0; j < staffData.staffList.length; j++) {
-                            if (staffData.staffList[j].id === staffId) {
-                                staffData.staffList[j].workingAtCounter = counter.name;
-                            }
+
+                        const updatedStaff = {
+                            ...staffData.find(staff => staff.id === staffId),
+                            workingAtCounter: counter.name,
+                        };
+
+                        if (updatedStaff) {
+                            updatedStaffList.push(updatedStaff);
+                        }
+                    } else {
+                        const existingStaff = staffData.find(staff => staff.id === userCounter.staffId);
+                        if (existingStaff) {
+                            updatedStaffList.push(existingStaff);
                         }
                     }
                 }
-                setUserCounters(userCounterData.userCounters); // Assuming userCounters is the key in the returned object
-                setStaffs(staffData.staffList);
+
+                setStaffs(updatedStaffList);
+                setUserCounters(userCounterData);
 
             } catch (error) {
                 setError(error.message);
@@ -294,43 +326,43 @@ function AdCounter() {
         setSelectedCounterId(counterId);
         setIsModalOpen(true);
 
-        const counterDataForName = await getCounterById(counterId);
-        setCurrentCounterName(counterDataForName.name);
-
-
-
         try {
+            // Fetch the name of the counter
             setLoading(true);
-            const userCounterData = await getUserCounterData(); // Fetch userCounter data
-            if (userCounterData.userCounters.length > 0) {
-                const counterPromises = userCounterData.userCounters
-                    .filter(userCounter => userCounter.counterId === counterId) // Filter based on the selected counterId
-                    .map(async (userCounter) => {
-                        const counterId = userCounter.counterId;
-                        const staffId = userCounter.staffId;
+            const counterResponse = await AccountAPI.getCounterById(counterId);
+            const counterDataForName = counterResponse;
 
-                        // Fetch counter and staff details based on IDs
-                        const counterData = await getCounterById(counterId);
-                        const staffData = await getStaffById(staffId);
+            setCurrentCounterName(counterDataForName.name);
 
-                        return { counterData, staffData };
-                    });
+            // Fetch userCounter data
+            const userCounterResponse = await AccountAPI.getUserCounterById(counterId);
+            const userCounterData = userCounterResponse; // Access data from response
 
-                const results = await Promise.all(counterPromises);
 
-                // Separate countersData and staffsData from results
-                const fetchedCounters = results.map((result) => result.counterData);
-                const fetchedStaffs = results.map((result) => result.staffData);
+            if (userCounterData.length > 0) {
+                console.log("Hello");
+                // Extract staff IDs from userCounterData
+                const staffIds = userCounterData.map(userCounter => userCounter.staffId);
 
-                setCountersData(fetchedCounters);
-                setStaffsData(fetchedStaffs);
+                // Fetch staff details sequentially
+                const staffData = [];
+                for (const staffId of staffIds) {
+                    const staffResponse = await AccountAPI.getStaffById(staffId);
+                    staffData.push(staffResponse.data);
+                }
+                console.log(staffData)
+
+                // Set staff data to state
+                setStaffsData(staffData);
             }
+
         } catch (error) {
             setError(error.message);
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -500,6 +532,7 @@ function AdCounter() {
                 </Table>
             </TableContainer>
 
+
             <Modal open={isModalOpen} onClose={handleCloseModal}>
                 <Box
                     sx={{
@@ -534,48 +567,58 @@ function AdCounter() {
                             renderInput={(params) => <TextField {...params} label="Add staff" />}
                             onChange={(event, value) => {
                                 setSelectedStaffId(value ? value.id : null);
-                            }} />
+                            }}
+                        />
                         <Button variant="contained" onClick={() => handleAddStaffToCounter(selectedStaffId, selectedCounterId)}>Add</Button>
                     </Box>
-                    <Grid container spacing={2}>
-                        {staffsData?.map((staff, index) => (
-                            <Grid item xs={4} key={index}>
-                                <Card
-                                    sx={{
-                                        display: 'flex',
-                                        '&:hover': {
-                                            cursor: 'pointer',
-                                        },
-                                        position: 'relative',
-                                    }}
-                                >
-                                    <IconButton
-                                        aria-label="close"
-                                        onClick={handleOpenConfirmModal}
+
+                    {loading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : (
+                        <Grid container spacing={2}>
+                            {staffsData?.map((staff, index) => (
+                                <Grid item xs={4} key={index}>
+                                    <Card
                                         sx={{
-                                            position: 'absolute',
-                                            top: 5,
-                                            right: 5,
+                                            display: 'flex',
+                                            '&:hover': {
+                                                cursor: 'pointer',
+                                            },
+                                            position: 'relative',
                                         }}
                                     >
-                                        <CloseIcon />
-                                    </IconButton>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        <CardContent sx={{ flex: '1 0 auto' }}>
-                                            <Typography component="div" variant="h5">
-                                                {staff?.name}
-                                            </Typography>
-                                            <Typography variant="subtitle1" color="text.secondary" component="div">
-                                                {formatCurrency(staff.income ? staff.income : '0.00')}
-                                            </Typography>
-                                        </CardContent>
-                                    </Box>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
+                                        <IconButton
+                                            aria-label="close"
+                                            onClick={handleOpenConfirmModal}
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 5,
+                                                right: 5,
+                                            }}
+                                        >
+                                            <CloseIcon />
+                                        </IconButton>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <CardContent sx={{ flex: '1 0 auto' }}>
+                                                <Typography component="div" variant="h5">
+                                                    {staff?.name}
+                                                </Typography>
+                                                <Typography variant="subtitle1" color="text.secondary" component="div">
+                                                    {formatCurrency(staff?.income ? staff?.income : '0.00')}
+                                                </Typography>
+                                            </CardContent>
+                                        </Box>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
                 </Box>
             </Modal>
+            );
+
             <Modal open={openConfirmModal} onClose={handleCloseConfirmModal}>
                 <Box
                     sx={{
