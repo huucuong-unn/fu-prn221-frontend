@@ -26,6 +26,8 @@ function AdPromotion() {
     const [selectedMentee, setSelectedMentee] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isNameValid, setIsNameValid] = useState(true);
+    const [isStartDateValid, setIsStartDateValid] = useState(true);
+    const [isEndDateValid, setIsEndDateValid] = useState(true);
     const [isValueValid, setIsValueValid] = useState(true);
     const [isDescriptionValid, setIsDescriptionValid] = useState(true);
     const [user, setUser] = useState();
@@ -155,39 +157,73 @@ function AdPromotion() {
     };
 
     const handleCloseCreateModal = () => {
+        setIsNameValid(false);
+        setIsNameValid(true);
+        setIsValueValid(true);
+        setIsStartDateValid(true);
+        setIsEndDateValid(true);
+        setIsDescriptionValid(true);
         setIsCreateModalOpen(false);
     };
 
-    const handleChangeStatus = async (id) => {
+    const handleChangeStatus = async (id, startDate, endDate) => {
         var result = await PromotionAPI.changeStatus(id);
         console.log(result);
+        const currentDate = new Date();
         if (result === false) {
-            window.alert('There can be only 1 promotion active at the same time.');
+            if (startDate > currentDate) {
+                window.alert('Promotion is not start yet.');
+            } else if (endDate < currentDate) {
+                window.alert('Promotion is expire.');
+            } else {
+                window.alert('There can be only 1 promotion active at the same time.');
+            }
+
         }
         await fetchPromotion();
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+        let isDataValid = true;
         const data = new FormData(event.currentTarget);
 
         if (data.get('name').length < 5 || data.get('name').length > 50) {
             setIsNameValid(false);
+            isDataValid = false;
         } else {
             setIsNameValid(true);
         }
 
-        if (isNaN(data.get('value')) || data.get('value') < 0 || data.get('value') > 1) {
+        if (isNaN(data.get('value')) || data.get('value') < 0 || data.get('value') > 1 || data.get('value') == '') {
             setIsValueValid(false);
+            isDataValid = false;
         } else {
             setIsValueValid(true);
         }
 
         if (data.get('description').length < 5 || data.get('description').length > 100) {
             setIsDescriptionValid(false);
+            isDataValid = false;
         } else {
             setIsDescriptionValid(true);
+        }
+        // Validate dates
+        const startDate = new Date(data.get('startDate'));
+        const endDate = new Date(data.get('endDate'));
+        const currentDate = new Date();
+
+        if (startDate < currentDate || data.get('startDate') == '') {
+            setIsStartDateValid(false);
+            isDataValid = false;
+        } else {
+            setIsStartDateValid(true);
+        }
+        if (endDate <= startDate || data.get('endDate') == '') {
+            setIsEndDateValid(false);
+            isDataValid = false;
+        } else {
+            setIsEndDateValid(true);
         }
         const promotionRequest = {
             name: data.get('name'),
@@ -202,8 +238,10 @@ function AdPromotion() {
             createBy: user.name,
         };
         console.log(promotionRequest);
-        await PromotionAPI.createOrder(promotionRequest);
-        await handleCloseCreateModal();
+        if (isDataValid) {
+            await PromotionAPI.createOrder(promotionRequest);
+            await handleCloseCreateModal();
+        }
         fetchPromotion();
     };
 
@@ -346,7 +384,7 @@ function AdPromotion() {
                                         id={promotion.id}
                                         control={<IOSSwitch sx={{ m: 1 }} checked={promotion.status === 'ACTIVE'} />}
                                         label={promotion.status == 'ACTIVE' ? 'Active' : 'InActive'}
-                                        onClick={() => handleChangeStatus(promotion.id)} // Ngăn chặn sự kiện click lan ra
+                                        onClick={() => handleChangeStatus(promotion.id, promotion.startDate, endDate)} // Ngăn chặn sự kiện click lan ra
                                     />
                                 </TableCell>
                             </TableRow>
@@ -440,6 +478,8 @@ function AdPromotion() {
                                     variant="outlined"
                                     size="small"
                                     type="date"
+                                    error={!isStartDateValid}
+                                    helperText={!isStartDateValid ? 'Invalid StartDate' : ''}
                                 />
                             </Box>
                             <Typography>to</Typography>
@@ -458,6 +498,8 @@ function AdPromotion() {
                                     variant="outlined"
                                     size="small"
                                     type="date"
+                                    error={!isEndDateValid}
+                                    helperText={!isEndDateValid ? 'Invalid Endate' : ''}
                                 />
                             </Box>
                         </Box>
