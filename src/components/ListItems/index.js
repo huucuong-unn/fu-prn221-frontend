@@ -87,7 +87,7 @@ export const SecondaryListItems = () => {
 
     const handleNavigate = (path) => {
         navigate(path);
-        window.scrollTo(0, 0); // Cuộn lên đầu trang
+        window.scrollTo(0, 0);
     };
 
     const handleLogout = async (path) => {

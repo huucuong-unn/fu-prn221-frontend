@@ -55,6 +55,18 @@ function AdOrder() {
     const [usePoint, setUsePoint] = useState(false);
     const [promotion, setPromotion] = useState();
 
+    const [account, setAccount] = useState();
+    useEffect(() => {
+        const fetchAccount = async () => {
+            try {
+                const response = await AccountAPI.getLoggedUser();
+                setAccount(response);
+            } catch (error) {
+                console.log('Failed to fetch account:', error);
+            }
+        };
+        fetchAccount();
+    }, []);
 
     const fetchOrders = async () => {
         try {
@@ -276,11 +288,11 @@ function AdOrder() {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-                <Button variant="contained" size="medium" onClick={handleOpenCreateModal} >
-                    Create
-                </Button>
-
+                {account?.role === 'STAFF' ? (
+                    <Button variant="contained" size="medium" onClick={handleOpenCreateModal} >
+                        Create
+                    </Button>
+                ) : (<></>)}
                 <Box>
                     <Typography variant="h5">Sale off {promotion?.name}</Typography>
                 </Box>
