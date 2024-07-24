@@ -158,9 +158,9 @@ function GoldPrice() {
                                     {material.name}
                                 </TableCell>
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
-                                    {material.buyingPrice}
+                                    {material.buyingPrice.toLocaleString()}
                                 </TableCell>
-                                <TableCell align="left">{material.salePrice}</TableCell>
+                                <TableCell align="left">{material.salePrice.toLocaleString()}</TableCell>
                                 <TableCell align="left">{material.updateDate}</TableCell>
                             </TableRow>
                         ))}

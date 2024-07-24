@@ -173,6 +173,11 @@ function AdOrder() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const handleSubmit = async () => {
+        if (!customerName || !customerPhone || !productIds.length || !orderType) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+
         console.log('Customer Name:', customerName);
         console.log('Customer Phone:', customerPhone);
         console.log('Product IDs:', productIds);
@@ -242,9 +247,9 @@ function AdOrder() {
         let total = 0;
         order?.orderItems?.forEach((item, index) => {
             html += `
-                <p>${index + 1}. ${item.product?.name} (${item.product?.productType?.name} - ${item.product?.weight}g) - Số lượng: ${item.quantity} - Giá: ${item.unitPrice.toLocaleString()} VND - Bảo hành: 3 tháng</p>
+                <p>${index + 1}. ${item.product?.name} (${item.product?.productType} - ${item.product?.weight}g) - Số lượng: ${item.quantity} - Giá: ${item.product.price.toLocaleString()} VND - Bảo hành: 3 tháng</p>
             `;
-            total += item.quantity * item.unitPrice;
+            total += item.quantity * item.product.price;
         });
 
 
@@ -484,21 +489,7 @@ function AdOrder() {
                             </Box>
                         )}
                         <Checkbox onChange={() => { setUsePoint(!usePoint); }} /><InputLabel>Use points</InputLabel>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                gap: 2,
-                                mt: 2,
-                            }}
-                        >
-                            <CustomizedHook
-                                list={searchProducts}
-                                onValueSelected={handleSelectedValue}
-                                onValueRemoved={handleRemoveSelectedValue}
-                            />
-                        </Box>
+
                         <Box
                             sx={{
                                 display: 'flex',
@@ -521,6 +512,23 @@ function AdOrder() {
                                 <MenuItem value={'StoreBuy'}>Store Buy</MenuItem>
                             </Select>
                         </Box>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: 2,
+                                mt: 2,
+                            }}
+                        >
+                            <CustomizedHook
+                                list={searchProducts}
+                                onValueSelected={handleSelectedValue}
+                                onValueRemoved={handleRemoveSelectedValue}
+                                orderType={orderType}
+                            />
+                        </Box>
+
                     </Box>
                     <Box sx={{ position: 'absolute', bottom: 10, right: 10, display: 'flex', gap: 2 }}>
                         <Button variant="outlined" onClick={handleCloseCreateModal}>
