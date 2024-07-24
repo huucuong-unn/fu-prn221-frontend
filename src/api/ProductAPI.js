@@ -21,6 +21,16 @@ const ProductAPI = {
         const authorizedConfig = this.addAuthorizationHeader({ params }, includeAuthorization);
         return axiosClient.get(url, authorizedConfig);
     },
+
+    createProduct(data, includeAuthorization = false) {
+        return axiosClient.post('/v1/product/create', data);
+    },
+
+    updateProductPrice(data, includeAuthorization = false) {
+        const url = '/v1/product/update-price';
+        const authorizedConfig = this.addAuthorizationHeader({ data }, includeAuthorization);
+        return axiosClient.put(url, authorizedConfig);
+    },
 };
 
 export default ProductAPI;
