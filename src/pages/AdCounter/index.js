@@ -365,15 +365,19 @@ function AdCounter() {
             const userCounterData = userCounterResponse; // Access data from response
 
 
-            if (userCounterData.length > 0) {
+            if (userCounterData.length > 0  ) {
+
                 console.log("Hello");
                 // Extract staff IDs from userCounterData
-                const staffIds = userCounterData.map(userCounter => userCounter.staffId);
+                const staffIds = userCounterData
+                    .filter(userCounter => userCounter.status === "ACTIVE")
+                    .map(userCounter => userCounter.staffId);
 
                 // Fetch staff details sequentially
                 const staffData = [];
                 for (const staffId of staffIds) {
                     const staffResponse = await AccountAPI.getStaffById(staffId);
+
                     staffData.push(staffResponse);
                 }
                 console.log("STAFF", staffData)
@@ -501,10 +505,10 @@ function AdCounter() {
                                 Email
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Working at Counter
+                                Currently working at Counter
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Income
+                                Income to now
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Role

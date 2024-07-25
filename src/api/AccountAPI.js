@@ -18,6 +18,11 @@ const AccountAPI = {
         return axiosClient.get(url, { params });
     },
 
+    getUser(params = { page: 1, size: 10 }) {
+        const url = `/v1/user`;
+        return axiosClient.get(url, { params });
+    },
+
     getCounterData() {
         const url = '/v1/counter-without-paging';
         return axiosClient.get(url);
@@ -42,7 +47,11 @@ const AccountAPI = {
     getStaffById(id) {
         const url = `/v1/user/${id}`;
         return axiosClient.get(url);
-    }
+    },
+
+    changeStatus(id, includeAuthorization = false) {
+        return axiosClient.delete(`/v1/user/change-status/${id}`);
+    },
 };
 
 export default AccountAPI;

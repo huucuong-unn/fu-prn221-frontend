@@ -55,11 +55,18 @@ export const MainListItems = () => {
                         </ListItemIcon>
                         <ListItemText primary="Promotions" />
                     </ListItemButton>
+
                     <ListItemButton onClick={() => handleNavigate('/admin/counter')}>
                         <ListItemIcon>
                             <BarChartIcon />
                         </ListItemIcon>
                         <ListItemText primary="Counter" />
+                    </ListItemButton>
+                    <ListItemButton onClick={() => handleNavigate('/admin/account')}>
+                        <ListItemIcon>
+                            <PeopleIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Account" />
                     </ListItemButton>
                 </>
 
