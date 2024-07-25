@@ -63,18 +63,16 @@ function OrderDetailPage() {
                             <TableCell>Weight (g)</TableCell>
                             <TableCell>Quantity</TableCell>
                             <TableCell>Unit Price (đ)</TableCell>
-                            <TableCell>Total Amount (đ)</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {order.orderItems.map((item, index) => (
                             <TableRow key={index}>
                                 <TableCell>{item.product.name}({item.product.productCode})</TableCell>
-                                <TableCell>{item.product.productType.name}</TableCell>
+                                <TableCell>{item.product.productType}</TableCell>
                                 <TableCell>{item.product.weight}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
-                                <TableCell>{item.unitPrice.toLocaleString()}</TableCell>
-                                <TableCell>{item.totalAmount.toLocaleString()} </TableCell>
+                                <TableCell>{item.product.price.toLocaleString()}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

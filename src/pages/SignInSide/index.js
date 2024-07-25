@@ -76,6 +76,7 @@ export default function SignInSide() {
                 }
             } catch (error) {
                 console.log(error);
+                window.alert('Đăng nhập thất bại. Email hoặc mật khẩu không đúng');
             }
         }
     };

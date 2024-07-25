@@ -7,7 +7,7 @@ import { styled } from '@mui/material/styles';
 import { autocompleteClasses } from '@mui/material/Autocomplete';
 
 const Root = styled('div')(
-    ({ theme }) => `
+  ({ theme }) => `
   color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
   font-size: 14px;
 `,
@@ -20,7 +20,7 @@ const Label = styled('label')`
 `;
 
 const InputWrapper = styled('div')(
-    ({ theme }) => `
+  ({ theme }) => `
   width: 300px;
   border: 1px solid ${theme.palette.mode === 'dark' ? '#434343' : '#d9d9d9'};
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
@@ -55,28 +55,28 @@ const InputWrapper = styled('div')(
 );
 
 function Tag(props) {
-    const { label, onDelete, onValueRemoved, ...other } = props;
-    return (
-        <div {...other}>
-            <span>{label}</span>
-            <CloseIcon
-                onClick={() => {
-                    onDelete(label);
-                    onValueRemoved(label);
-                }}
-            />
-        </div>
-    );
+  const { label, onDelete, onValueRemoved, ...other } = props;
+  return (
+    <div {...other}>
+      <span>{label}</span>
+      <CloseIcon
+        onClick={() => {
+          onDelete(label);
+          onValueRemoved(label);
+        }}
+      />
+    </div>
+  );
 }
 
 Tag.propTypes = {
-    label: PropTypes.string.isRequired,
-    onDelete: PropTypes.func.isRequired,
-    onValueRemoved: PropTypes.func.isRequired,
+  label: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onValueRemoved: PropTypes.func.isRequired,
 };
 
 const StyledTag = styled(Tag)(
-    ({ theme }) => `
+  ({ theme }) => `
   display: flex;
   align-items: center;
   height: 24px;
@@ -110,7 +110,7 @@ const StyledTag = styled(Tag)(
 );
 
 const Listbox = styled('ul')(
-    ({ theme }) => `
+  ({ theme }) => `
   width: 300px;
   margin: 2px 0 0;
   padding: 0;
@@ -156,63 +156,79 @@ const Listbox = styled('ul')(
 `,
 );
 
-export default function CustomizedHook({ list, onValueSelected, onValueRemoved }) {
-    const {
-        getRootProps,
-        getInputLabelProps,
-        getInputProps,
-        getTagProps,
-        getListboxProps,
-        getOptionProps,
-        groupedOptions,
-        value,
-        focused,
-        setAnchorEl,
-    } = useAutocomplete({
-        id: 'customized-hook-demo',
-        multiple: true,
-        options: list,
-        getOptionLabel: (option) => option.productCode,
-        onChange: (event, newValue) => onValueSelected(newValue),
-    });
+export default function CustomizedHook({ list, onValueSelected, onValueRemoved, orderType }) {
+  const [filteredList, setFilteredList] = React.useState([]);
 
-    CustomizedHook.propTypes = {
-        list: PropTypes.array.isRequired,
-        onValueSelected: PropTypes.func.isRequired,
-    };
+  React.useEffect(() => {
+    // Filter the list based on the orderType
+    if (orderType === 'CustomerBuy') {
+      setFilteredList(list.filter((option) => option.status === 'AVAILABLE'));
+    } else if (orderType === 'StoreBuy') {
+      setFilteredList(list.filter((option) => option.status === 'SALED'));
+    } else {
+      setFilteredList(list);
+    }
+  }, [list, orderType]);
 
-    return (
-        <Root>
-            <div {...getRootProps()}>
-                <Label {...getInputLabelProps()}>Enter Product Code</Label>
-                <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
-                    {value.map((option, index) => {
-                        const { key, ...tagProps } = getTagProps({ index });
-                        return (
-                            <StyledTag
-                                key={key}
-                                {...tagProps}
-                                label={option.productCode}
-                                onValueRemoved={onValueRemoved}
-                            />
-                        );
-                    })}
-                    <input {...getInputProps()} />
-                </InputWrapper>
-            </div>
-            {groupedOptions.length > 0 ? (
-                <Listbox {...getListboxProps()}>
-                    {groupedOptions.map((option, index) => {
-                        const { key, ...optionProps } = getOptionProps({ option, index });
-                        return (
-                            <li key={key} {...optionProps}>
-                                <span>{option.productCode} - {option.status}</span>
-                                <CheckIcon fontSize="small" />
-                            </li>
-                        );
-                    })}
-                </Listbox>
-            ) : null}
-        </Root>
-    );
+
+  const {
+    getRootProps,
+    getInputLabelProps,
+    getInputProps,
+    getTagProps,
+    getListboxProps,
+    getOptionProps,
+    groupedOptions,
+    value,
+    focused,
+    setAnchorEl,
+  } = useAutocomplete({
+    id: 'customized-hook-demo',
+    multiple: true,
+    options: filteredList,
+    getOptionLabel: (option) => option.productCode,
+    onChange: (event, newValue) => onValueSelected(newValue),
+  });
+
+  CustomizedHook.propTypes = {
+    list: PropTypes.array.isRequired,
+    onValueSelected: PropTypes.func.isRequired,
+    orderType: PropTypes.string.isRequired,
+  };
+
+
+  return (
+    <Root>
+      <div {...getRootProps()}>
+        <Label {...getInputLabelProps()}>Enter Product Code</Label>
+        <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
+          {value.map((option, index) => {
+            const { key, ...tagProps } = getTagProps({ index });
+            return (
+              <StyledTag
+                key={key}
+                {...tagProps}
+                label={option.productCode}
+                onValueRemoved={onValueRemoved}
+              />
+            );
+          })}
+          <input {...getInputProps()} />
+        </InputWrapper>
+      </div>
+      {groupedOptions.length > 0 ? (
+        <Listbox {...getListboxProps()}>
+          {groupedOptions.map((option, index) => {
+            const { key, ...optionProps } = getOptionProps({ option, index });
+            return (
+              <li key={key} {...optionProps}>
+                <span>{option.productCode} - {option.status}</span>
+                <CheckIcon fontSize="small" />
+              </li>
+            );
+          })}
+        </Listbox>
+      ) : null}
+    </Root>
+  );
 }
