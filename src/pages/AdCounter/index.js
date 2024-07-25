@@ -134,19 +134,20 @@ function AdCounter() {
                 const updatedStaffList = [];
                 // Process user counters to find active counters and corresponding staff
 
-                for (const userCounter of userCounterData) {
+                for (const userCounter of userCounterData.listResult) {
                     if (userCounter.status === 'ACTIVE' || userCounter.status === 'active') {
-                        const { counterId, staffId } = userCounter;
 
 
-                        const counter =  (await AccountAPI.getCounterById(counterId)).data;
-                        const staff = (await AccountAPI.getStaffById(staffId)).data;
+
+                        const counter =  (await AccountAPI.getCounterById( userCounter.counterId));
+                        const staff = (await AccountAPI.getStaffById( userCounter.staffId));
 
                         console.log('Counter:', counter);
                         console.log('Staff:', staff);
 
+                        console.log('Staff id:', staff.id);
                         const updatedStaff = {
-                            ...staffData.find(staff => staff.id === staffId),
+                            ...staffData.find(staffs => staffs.id === staff.id ),
                             workingAtCounter: counter.name,
                         };
 
@@ -348,9 +349,10 @@ function AdCounter() {
                 const staffData = [];
                 for (const staffId of staffIds) {
                     const staffResponse = await AccountAPI.getStaffById(staffId);
-                    staffData.push(staffResponse.data);
+                    staffData.push(staffResponse);
                 }
-                console.log(staffData)
+                console.log("STAFF", staffData)
+
 
                 // Set staff data to state
                 setStaffsData(staffData);
@@ -367,6 +369,7 @@ function AdCounter() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentCounterName();
+        setStaffsData();
 
     };
 
@@ -617,7 +620,7 @@ function AdCounter() {
                     )}
                 </Box>
             </Modal>
-            );
+            
 
             <Modal open={openConfirmModal} onClose={handleCloseConfirmModal}>
                 <Box
