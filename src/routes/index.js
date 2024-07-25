@@ -11,12 +11,14 @@ import GoldPrice from '~/pages/GoldPrice';
 import OrderDetailPage from '~/pages/OrderDetailPage';
 import AdCounter from '~/pages/AdCounter';
 import AdProduct from '~/pages/AdProduct';
+import AdAccount from '~/pages/AdAccount';
 
 const publicRoutes = [
     { path: '/', component: AdDashboard, layout: AdminLayout },
     { path: '/admin/dashboard', component: AdDashboard, layout: AdminLayout },
     { path: '/admin/promotions', component: AdPromotion, layout: AdminLayout },
     { path: '/admin/counter', component: AdCounter, layout: AdminLayout },
+    { path: '/admin/account', component: AdAccount, layout: AdminLayout },
     { path: '/admin/product', component: AdProduct, layout: AdminLayout },
     { path: '/admin/return-policy', component: ReturnPolicy, layout: AdminLayout },
     { path: '/admin/gold-price', component: GoldPrice, layout: AdminLayout },

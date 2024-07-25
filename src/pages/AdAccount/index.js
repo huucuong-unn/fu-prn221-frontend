@@ -35,7 +35,7 @@ import UserCounterAPI from '~/api/UserCounterAPI';
 import CounterAPI from '~/api/CounterAPI';
 
 
-function AdCounter() {
+function AdAccount() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,49 +53,40 @@ function AdCounter() {
     const [newCounterName, setNewCounterName] = useState('');
     const [currentCounterName, setCurrentCounterName] = useState('');
     const [countersData, setCountersData] = useState([]);
-    const [staffsData, setStaffsData] = useState([]);
+
     const [staffModalData, setStaffsModalData] = useState([]);
     const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
-    const [updateCounterName, setUpdateCounterName] = useState();
+    const [updateUserName, setUpdateUserName] = useState();
+    const [updateUserEmail, setUpdateUserEmail] = useState();
+    const [updatePassword, setUpdatePassword] = useState();
 
-    //
-    // const handleOpenCounterModal = async () => {
-    //     setIsModalOpen(true);
-    //     try {
-    //         setLoading(true);
-    //         const userCounterData = await AccountAPI.getUserCounterData(); // Fetch userCounter data
-    //
-    //         if (userCounterData.userCounters.length > 0) {
-    //             const counterPromises = userCounterData.userCounters.map(async (userCounter) => {
-    //                 const counterId = userCounter.counterId;
-    //                 const staffId = userCounter.staffId;
-    //
-    //                 // Fetch counter and staff details based on IDs
-    //                 const counterData = await getCounterById(counterId);
-    //                 const staffData = await getStaffById(staffId);
-    //
-    //                 setCurrentCounterName(counterData.name);
-    //
-    //                 return { counterData, staffData };
-    //             });
-    //
-    //             const results = await Promise.all(counterPromises);
-    //
-    //             // Separate countersData and staffsData from results
-    //             const fetchedCounters = results.map((result) => result.counterData);
-    //             const fetchedStaffs = results.map((result) => result.staffData);
-    //
-    //             setCountersData(fetchedCounters);
-    //             setStaffsData(fetchedStaffs);
-    //         }
-    //     } catch (error) {
-    //         setError(error.message);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
+    const handleUpdateUser = async () => {
+        try {
+            console.log('updateFullName: ', updateUserName);
+            console.log('updateEmail: ', updateUserEmail);
+            console.log('updatePassword: ', updatePassword);
+            const updateCounter = await AccountAPI.getStaffById(selectedStaffId.id);
+            const result = await AccountAPI.update(selectedStaffId.id, {
+                name: updateUserName,
+                income: updateCounter.income,
+                createDate: updateCounter.createDate,
+                createBy: updateCounter.createBy,
+                updateDate: new Date().toISOString(),
+                updateBy: "admin",
+                status: updateCounter.status,
+            });
+            console.log(result);
+
+            window.alert('Update successfully');
+            handleCloseEditModal();
+            window.location.reload();
+        } catch (e) {
+            console.log(e);
+        }
+
+    }
 
 
     const formatCurrency = (value) => {
@@ -111,10 +102,10 @@ function AdCounter() {
             try {
                 // Fetch data from APIs concurrently
 
-                    AccountAPI.getCounterData()
-                    AccountAPI.getUserCounterData()
+                AccountAPI.getCounterData()
+                AccountAPI.getUserCounterData()
                 // Extract data from responses
-                const staffData = await AccountAPI.getStaffData(); // Assuming 'listResult' is the key
+                const staffData = await AccountAPI.getUser(); // Assuming 'listResult' is the key
                 const counterData = await AccountAPI.getCounterData();
                 const userCounterData = await AccountAPI.getUserCounterData();
 
@@ -133,14 +124,16 @@ function AdCounter() {
                 const updatedStaffList = staffData.listResult.map(staff => {
                     const userCounter = userCounterData.listResult.find(uc => uc.staffId === staff.id);
                     let workingAtCounter = 'No counter assigned';
-
+                    if(staff.role === "ADMIN"){
+                      workingAtCounter = 'THIS IS ADMIN'
+                    }
                     if (userCounter && userCounter.status.toLowerCase() === 'active') {
                         const counter = counterData.find(c => c.id === userCounter.counterId);
                         if (counter) {
                             workingAtCounter = counter.name;
                         }
                     }
-                    console.log(workingAtCounter);
+
 
                     return {
                         ...staff,
@@ -280,52 +273,20 @@ function AdCounter() {
             console.error('Error creating counter:', error);
         }
     };
-    const handleDelete = async () => {
-        try {
-            // Assume staffId and counterId are available
-            const staffId = "";
-            const counterId = "";
-
-            // Call the API to change the status
-            await AccountAPI.changeUserCounterStatus(staffId, counterId);
-
-
-          await AccountAPI.changeStatus(counterId);
-
-            // Handle any success actions, e.g., update state, show notification
-            console.log('Status changed successfully');
-        } catch (error) {
-            // Handle error, e.g., show notification
-            console.error('Failed to change status', error);
-        }
-    };
-
-    const handleChangeStaus = async () => {
-        try {
-            // Assume staffId and counterId are available
-            const staffId = ""
-            const counterId = ""
-
-            // Call the API to change the status
-            await AccountAPI.changeUserCounterStatus(staffId, counterId);
-
-
-            await AccountAPI.changeStatus(counterId);
-
-            // Handle any success actions, e.g., update state, show notification
-            console.log('Status changed successfully');
-        } catch (error) {
-            // Handle error, e.g., show notification
-            console.error('Failed to change status', error);
-        }
-    };
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
     };
 
-    const handleOpenModalForStaff = () => {
-        setIsModalOpenForStaff(true);
+    const handleOpenModalForStaff = async (staffId) => {
+        try {
+            const staffData = await AccountAPI.getStaffById(staffId);
+
+            setSelectedStaffId(staffData);
+          setIsModalOpenForStaff(true)
+        } catch (error) {
+            console.error("Error fetching staff details:", error);
+        }
     };
 
     const handleCloseModalForStaff = () => {
@@ -348,149 +309,46 @@ function AdCounter() {
         setOpenConfirmModal(false);
     };
 
-    const handleOpenModal = async (counterId) => {
-        setSelectedCounterId(counterId);
-        setIsModalOpen(true);
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setSelectedStaffId((prev) => ({
+            ...prev,
+            [id]: value,
+        }));
+    };
 
-        try {
-            // Fetch the name of the counter
-            setLoading(true);
-            const counterResponse = await AccountAPI.getCounterById(counterId);
-            const counterDataForName = counterResponse;
+    const handleSave = async () => {
+        // Add validation logic here
+        const isValid = true; // Replace with actual validation checks
 
-            setCurrentCounterName(counterDataForName.name);
-
-            // Fetch userCounter data
-            const userCounterResponse = await AccountAPI.getUserCounterById(counterId);
-            const userCounterData = userCounterResponse; // Access data from response
-
-
-            if (userCounterData.length > 0  ) {
-
-                console.log("Hello");
-                // Extract staff IDs from userCounterData
-                const staffIds = userCounterData
-                    .filter(userCounter => userCounter.status === "ACTIVE")
-                    .map(userCounter => userCounter.staffId);
-
-                // Fetch staff details sequentially
-                const staffData = [];
-                for (const staffId of staffIds) {
-                    const staffResponse = await AccountAPI.getStaffById(staffId);
-
-                    staffData.push(staffResponse);
-                }
-                console.log("STAFF", staffData)
-
-
-                // Set staff data to state
-                setStaffsData(staffData);
+        if (isValid) {
+            try {
+                await AccountAPI.update(selectedStaffId.id, selectedStaffId);
+                handleCloseModalForStaff(); // Close the modal on success
+            } catch (error) {
+                console.error("Error updating staff details:", error);
             }
-
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
         }
     };
+
+
 
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentCounterName();
-        setStaffsData();
+
 
     };
 
-    const handleAddStaffToCounter = async (staffId, counterId) => {
-        console.log('staffId ' + staffId);
-        console.log('counterId ', counterId);
-        const userCounter = {
-            staffId: staffId,
-            counterId: counterId,
-            status: 'ACTIVE',
-        };
-
-        try {
-            const result = await UserCounterAPI.create({
-                staffId: staffId,
-                counterId: counterId,
-                status: 'ACTIVE',
-            }, false);
-            console.log(result);
-            window.alert('Add staff successfully');
-
-        } catch (e) {
-            console.log(e);
-        }
-
-        handleCloseModal();
-        window.location.reload();
-
-    };
-
-    const handleUpdateCounterName = async () => {
-        try {
-            console.log('updateCounterName: ', updateCounterName);
-            const updateCounter = await CounterAPI.getById(selectedCounterId);
-            const result = await CounterAPI.update(updateCounter.id, {
-                name: updateCounterName,
-                income: updateCounter.income,
-                createDate: updateCounter.createDate,
-                createBy: updateCounter.createBy,
-                updateDate: new Date().toISOString(),
-                updateBy: "admin",
-                status: updateCounter.status,
-            });
-            console.log(result);
-
-            window.alert('Update counter name successfully');
-            handleCloseEditModal();
-            window.location.reload();
-        } catch (e) {
-            console.log(e);
-        }
-
-    }
 
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 4 }}>
-            <Button variant="contained" onClick={() => handleOpenCreateModal()}>
-                Create Counter
-            </Button>
-            <Grid container spacing={2}>
-                {counters?.map((counter, index) => (
-                    <Grid item xs={4} key={index}>
-                        <Card
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                '&:hover': {
-                                    cursor: 'pointer',
-                                },
-                            }}
-                            onClick={() => handleOpenModal(counter.id)} // Pass counter.id here
-                        >
-                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                <CardContent sx={{ flex: '1 0 auto' }}>
-                                    <Typography component="div" variant="h5">
-                                        {counter?.name}
-                                    </Typography>
-                                    <Typography variant="subtitle1" color="text.secondary" component="div">
-                                        Income: {formatCurrency(counter?.income)}
-                                    </Typography>
-                                </CardContent>
-                            </Box>
-                            <FormControlLabel
-                                control={<IOSSwitch sx={{ m: 1 }} checked={counter?.status === 'ACTIVE'} />}
-                                label={counter?.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                            />
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
 
+            <Button variant="contained" onClick={() => handleOpenCreateModal()}>
+                Create Account
+            </Button>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
@@ -508,7 +366,7 @@ function AdCounter() {
                                 Currently working at Counter
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Income to now
+                                Income All the time
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Role
@@ -528,7 +386,7 @@ function AdCounter() {
                                         cursor: 'pointer',
                                     },
                                 }}
-                                onClick={() => handleOpenModalForStaff()}
+                                onClick={() => handleOpenModalForStaff(staff.id)}
                             >
                                 <TableCell component="th" scope="row">
                                     {index + 1}
@@ -544,13 +402,17 @@ function AdCounter() {
                                     {staff?.workingAtCounter ? staff.workingAtCounter : 'None'}
                                 </TableCell>
                                 <TableCell align="left">
-                                    {formatCurrency(staff?.income ? staff.income : '0.00')}
+                                    {staff?.role === 'ADMIN' ? (
+                                        "THIS IS ADMIN"
+                                    ) : (
+                                        formatCurrency(staff?.income ? staff.income : '0.00')
+                                    )}
                                 </TableCell>
                                 <TableCell align="left">
                                     <Chip
                                         label={staff.role}
                                         sx={{
-                                            backgroundColor: staff.role === 'Admin' ? 'red' : 'blue',
+                                            backgroundColor: staff.role === 'ADMIN' ? 'red' : 'blue',
                                             color: 'white',
                                         }}
                                     />
@@ -565,91 +427,8 @@ function AdCounter() {
             </TableContainer>
 
 
-            <Modal open={isModalOpen} onClose={handleCloseModal}>
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '900px',
-                        bgcolor: '#f5f5f5',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                        textAlign: 'left',
-                    }}
-                >
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 1 }}>
-                        <Typography variant="h4" fontWeight="bold">
-                            List of Staff at {currentCounterName}
-                        </Typography>
-                        <Button variant="contained" color="primary" onClick={handleOpenEditModal}>
-                            Edit
-                        </Button>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mb: 3 }}>
-                        <Autocomplete
-                            disablePortal
-                            id="combo-box-demo"
-                            sx={{ width: 200 }}
-                            size="small"
-                            options={staffs || []} // Ensure options is always an array
-                            getOptionLabel={(option) => option.email || ''} // Define how to extract the label from options
-                            renderInput={(params) => <TextField {...params} label="Add staff" />}
-                            onChange={(event, value) => {
-                                setSelectedStaffId(value ? value.id : null);
-                            }}
-                        />
-                        <Button variant="contained" onClick={() => handleAddStaffToCounter(selectedStaffId, selectedCounterId)}>Add</Button>
-                    </Box>
 
-                    {loading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
-                            <CircularProgress />
-                        </Box>
-                    ) : (
-                        <Grid container spacing={2}>
-                            {staffsData?.map((staff, index) => (
-                                <Grid item xs={4} key={index}>
-                                    <Card
-                                        sx={{
-                                            display: 'flex',
-                                            '&:hover': {
-                                                cursor: 'pointer',
-                                            },
-                                            position: 'relative',
-                                        }}
-                                    >
-                                        <IconButton
-                                            aria-label="close"
-                                            onClick={handleOpenConfirmModal}
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 5,
-                                                right: 5,
-                                            }}
-                                        >
-                                            <CloseIcon />
-                                        </IconButton>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                            <CardContent sx={{ flex: '1 0 auto' }}>
-                                                <Typography component="div" variant="h5">
-                                                    {staff?.name}
-                                                </Typography>
-                                                <Typography variant="subtitle1" color="text.secondary" component="div">
-                                                    {formatCurrency(staff?.income ? staff?.income : '0.00')}
-                                                </Typography>
-                                            </CardContent>
-                                        </Box>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    )}
-                </Box>
-            </Modal>
-            
+
 
             <Modal open={openConfirmModal} onClose={handleCloseConfirmModal}>
                 <Box
@@ -670,7 +449,7 @@ function AdCounter() {
                         <Button variant="contained" sx={{ mr: 1 }}>
                             Cancel
                         </Button>
-                        <Button variant="contained" color="error"> onClick={handleDelete}
+                        <Button variant="contained" color="error">
                             Delete
                         </Button>
                     </Box>
@@ -709,30 +488,7 @@ function AdCounter() {
                     </Box>
                 </Box>
             </Modal>
-            <Modal open={isEditModalOpen} onClose={handleCloseEditModal}>
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        bgcolor: 'background.paper',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: '5px',
-                    }}
-                >
-                    <Typography variant="h5" sx={{ mb: 1 }}>
-                        Update Counter Name
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-                        <TextField id="outlined-basic" label="Name..." variant="outlined" size="small" onChange={(event, value) => setUpdateCounterName(event.target.value)} />
-                        <Button variant="contained" size="medium" onClick={() => handleUpdateCounterName()}>
-                            Update
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+
             <Modal open={isModalOpenForStaff} onClose={handleCloseModalForStaff}>
                 <Box
                     sx={{
@@ -760,9 +516,9 @@ function AdCounter() {
                             Staff Profile
                         </Typography>
                         <Chip
-                            label="Admin"
+                            label={selectedStaffId?.role === 'ADMIN' ? 'Admin' : 'Staff'}
                             sx={{
-                                backgroundColor: 'red',
+                                backgroundColor: selectedStaffId?.role === 'ADMIN' ? 'red' : 'blue',
                                 color: 'white',
                             }}
                         />
@@ -791,9 +547,11 @@ function AdCounter() {
                         >
                             <TextField
                                 id="name"
-                                name="Name"
+                                name="name"
                                 label="Full name"
                                 variant="outlined"
+                                value={selectedStaffId ? selectedStaffId.name : ''}
+                                onChange={(event, value) => setUpdateUserName(event.target.value)} />
                                 sx={{ flex: 1 }}
                                 error={!isNameValid}
                                 helperText={!isNameValid ? 'Name must have more than 5 characters' : ''}
@@ -802,6 +560,8 @@ function AdCounter() {
                                 id="phoneNumber"
                                 name="phoneNumber"
                                 label="Phone number"
+                                disabled={true}
+                                value={'None for now'}
                                 variant="outlined"
                                 sx={{ flex: 1 }}
                                 error={!isPhoneNumberValid}
@@ -821,6 +581,8 @@ function AdCounter() {
                                 name="email"
                                 label="Email"
                                 variant="outlined"
+                                value={selectedStaffId ? selectedStaffId.email : ''}
+                                onChange={(event, value) => setUpdateUserEmail(event.target.value)} />
                                 sx={{ flex: 1 }}
                                 error={!isEmailValid}
                                 helperText={!isEmailValid ? 'Invalid email' : ''}
@@ -828,15 +590,18 @@ function AdCounter() {
                             <TextField
                                 id="password"
                                 name="password"
-                                label="Password"
+                                label="New Password"
                                 variant="outlined"
+                                type="password"
+                                value={selectedStaffId ? selectedStaffId.password : ''}
+                                onChange={(event, value) => setUpdatePassword(event.target.value)} />
                                 sx={{ flex: 1 }}
                                 error={!isPasswordValid}
                                 helperText={!isPasswordValid ? 'Password must have more than 5 characters' : ''}
                             />
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'right', alignItems: 'center', gap: 1 }}>
-                            <Button variant="outlined">Close</Button>
+                            <Button variant="outlined" onClick={handleCloseModalForStaff}>Close</Button>
                             <Button variant="contained" type="submit">
                                 Save
                             </Button>
@@ -844,8 +609,9 @@ function AdCounter() {
                     </Box>
                 </Box>
             </Modal>
+
         </Box>
     );
 }
 
-export default AdCounter;
+export default AdAccount;
