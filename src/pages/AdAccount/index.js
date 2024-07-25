@@ -20,6 +20,11 @@ import {
     IconButton,
     Chip,
     CircularProgress,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    TablePagination,
 } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
@@ -30,9 +35,8 @@ import { useEffect, useState } from 'react';
 
 
 import AccountAPI from '~/api/AccountAPI';
-import { getCounterById, getStaffById } from '~/api/OldMethod/getByID';
-import UserCounterAPI from '~/api/UserCounterAPI';
-import CounterAPI from '~/api/CounterAPI';
+import axios from 'axios';
+
 
 
 function AdAccount() {
@@ -53,29 +57,62 @@ function AdAccount() {
     const [newCounterName, setNewCounterName] = useState('');
     const [currentCounterName, setCurrentCounterName] = useState('');
     const [countersData, setCountersData] = useState([]);
-
+    const [totalRecords, setTotalRecords] = useState(0);
     const [staffModalData, setStaffsModalData] = useState([]);
     const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
     const [updateUserName, setUpdateUserName] = useState();
     const [updateUserEmail, setUpdateUserEmail] = useState();
     const [updatePassword, setUpdatePassword] = useState();
+    const [updateRole, setUpdateRole] = useState();
+    const [updateUser, setUpdateUser] = useState({
+        name: '',
+        email:'',
+       pass:'',
+        role:''
+    });
+    const handleStatusChange = async (staffId, currentStatus) => {
+        const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
+        try {
+            // Make API call to change status
+            await AccountAPI.changeStatus(staffId);
+
+            // Update local state to reflect the new status
+            setStaffs(prevStaffs => prevStaffs.map(staff =>
+                staff.id === staffId
+                    ? { ...staff, status: newStatus }
+                    : staff
+            ));
+            window.location.reload();
+        } catch (error) {
+            // Handle API call error
+            console.error('Failed to update status:', error);
+        }
+    };
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const handleUpdateUser = async () => {
         try {
             console.log('updateFullName: ', updateUserName);
             console.log('updateEmail: ', updateUserEmail);
             console.log('updatePassword: ', updatePassword);
-            const updateCounter = await AccountAPI.getStaffById(selectedStaffId.id);
+            const updateUser = await AccountAPI.getStaffById(selectedStaffId.id);
+            console.log(updateUser);
             const result = await AccountAPI.update(selectedStaffId.id, {
                 name: updateUserName,
-                income: updateCounter.income,
-                createDate: updateCounter.createDate,
-                createBy: updateCounter.createBy,
-                updateDate: new Date().toISOString(),
+                password: updatePassword,
+                email: updateUserEmail,
+                role: updateRole,
+
+                income: updateUser.income,
+                createdDate: updateUser.createdDate,
+                createBy: updateUser.createBy,
+                updatedDate: new Date().toISOString(),
                 updateBy: "admin",
-                status: updateCounter.status,
+                status: updateUser.status,
             });
             console.log(result);
 
@@ -101,19 +138,21 @@ function AdAccount() {
         const fetchData = async () => {
             try {
                 // Fetch data from APIs concurrently
-
                 AccountAPI.getCounterData()
                 AccountAPI.getUserCounterData()
                 // Extract data from responses
-                const staffData = await AccountAPI.getUser(); // Assuming 'listResult' is the key
+                const staffData = await AccountAPI.getUser({ page: page + 1, size: rowsPerPage });
                 const counterData = await AccountAPI.getCounterData();
                 const userCounterData = await AccountAPI.getUserCounterData();
-
-
+                const totalRecords = staffData.totalPages;
+                setTotalRecords(totalRecords);
+                console.log(totalRecords);
                 // Log responses
                 console.log('Staff Data:', staffData);
                 console.log('Counter Data:', counterData);
                 console.log('User Counter Data:', userCounterData);
+
+
 
                 // Set state with the extracted data
                 setStaffs(staffData.listResult);
@@ -152,7 +191,7 @@ function AdAccount() {
         };
 
         fetchData();
-    }, []);
+    }, [page, rowsPerPage]);
 
 
 
@@ -242,27 +281,29 @@ function AdAccount() {
     };
 
     const handleCreateCounter = async () => {
-        const newCounter = {
-            name: newCounterName,
-            income: 0,
+        const newUser = {
+            name: updateUser.name,
+            email: updateUser.email,
+            password: updateUser.pass,
+            role: updateUser.role,
             status: "ACTIVE",
-            createDate: new Date().toISOString(),
-            createBy: "string",
-            updateDate: new Date().toISOString(),
-            updateBy: "string",
+            createdDate: new Date().toISOString(),
+            createBy: "admin",
+            updatedDate: new Date().toISOString(),
+            updateBy: "",
         };
 
         try {
-            const response = await fetch('http://localhost:5036/api/v1/counter/create', {
+            const response = await fetch('http://localhost:5036/api/v1/user/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newCounter),
+                body: JSON.stringify(newUser),
             });
 
             if (!response.ok) {
-                throw new Error('Failed to create counter');
+                throw new Error('Failed to create user');
             }
 
             const createdCounter = await response.json();
@@ -280,9 +321,9 @@ function AdAccount() {
 
     const handleOpenModalForStaff = async (staffId) => {
         try {
-            const staffData = await AccountAPI.getStaffById(staffId);
+            const selectedStaff = await AccountAPI.getStaffById(staffId);
 
-            setSelectedStaffId(staffData);
+            setSelectedStaffId(selectedStaff);
           setIsModalOpenForStaff(true)
         } catch (error) {
             console.error("Error fetching staff details:", error);
@@ -317,19 +358,19 @@ function AdAccount() {
         }));
     };
 
-    const handleSave = async () => {
-        // Add validation logic here
-        const isValid = true; // Replace with actual validation checks
-
-        if (isValid) {
-            try {
-                await AccountAPI.update(selectedStaffId.id, selectedStaffId);
-                handleCloseModalForStaff(); // Close the modal on success
-            } catch (error) {
-                console.error("Error updating staff details:", error);
-            }
-        }
-    };
+    // const handleSave = async () => {
+    //     // Add validation logic here
+    //     const isValid = true; // Replace with actual validation checks
+    //
+    //     if (isValid) {
+    //         try {
+    //             await AccountAPI.update(selectedStaffId.id, selectedStaffId);
+    //             handleCloseModalForStaff(); // Close the modal on success
+    //         } catch (error) {
+    //             console.error("Error updating staff details:", error);
+    //         }
+    //     }
+    // };
 
 
 
@@ -353,43 +394,28 @@ function AdAccount() {
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                No
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Name
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Email
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Currently working at Counter
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Income All the time
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Role
-                            </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Status
-                            </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>No</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Name</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Email</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Currently working at Counter</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Income All the time</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Role</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {staffs?.map((staff, index) => (
+                        {staffs.map((staff, index) => (
                             <TableRow
                                 key={index}
                                 sx={{
                                     '&:last-child td, &:last-child th': { border: 0 },
-                                    '&:hover': {
-                                        cursor: 'pointer',
-                                    },
+                                    '&:hover': { cursor: 'pointer' },
                                 }}
-                                onClick={() => handleOpenModalForStaff(staff.id)}
+                                onDoubleClick={() => handleOpenModalForStaff(staff.id)}
                             >
                                 <TableCell component="th" scope="row">
-                                    {index + 1}
+                                    {page * rowsPerPage + index + 1}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
                                     {staff?.name}
@@ -397,16 +423,13 @@ function AdAccount() {
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
                                     {staff?.email}
                                 </TableCell>
-
                                 <TableCell align="left">
                                     {staff?.workingAtCounter ? staff.workingAtCounter : 'None'}
                                 </TableCell>
                                 <TableCell align="left">
-                                    {staff?.role === 'ADMIN' ? (
-                                        "THIS IS ADMIN"
-                                    ) : (
-                                        formatCurrency(staff?.income ? staff.income : '0.00')
-                                    )}
+                                    {staff?.role === 'ADMIN'
+                                        ? 'THIS IS ADMIN'
+                                        : formatCurrency(staff?.income || '0.00')}
                                 </TableCell>
                                 <TableCell align="left">
                                     <Chip
@@ -420,11 +443,35 @@ function AdAccount() {
                                 <TableCell align="left">
                                     {staff.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                                 </TableCell>
+                                <TableCell align="left">
+                                    <Button
+                                        variant="contained"
+                                        color={staff.status === 'ACTIVE' ? 'secondary' : 'primary'}
+                                        onClick={() => handleStatusChange(staff.id)}
+                                    >
+                                        {staff.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                                    </Button>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={totalRecords}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(event, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                    }}
+                />
             </TableContainer>
+
+
+
 
 
 
@@ -468,23 +515,55 @@ function AdAccount() {
                         borderRadius: '5px',
                     }}
                 >
-                    <Typography variant="h5" sx={{ mb: 1 }}>
-                        Create Counter
+                    <Typography variant="h5" sx={{ mb: 2 }}>
+                        Create Account
                     </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+                    <Box component="form" onSubmit={handleCreateCounter} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <TextField
-                            id="outlined-basic"
-                            label="Name..."
+                            label="Name"
                             variant="outlined"
                             size="small"
-                            value={newCounterName}
-                            onChange={(e) => setNewCounterName(e.target.value)}
+                            value={updateUser.name}
+                            onChange={(e) => setUpdateUser({ ...updateUser, name: e.target.value })}
+                            fullWidth
                         />
+                        <TextField
+                            label="Password"
+                            type="password"
+                            variant="outlined"
+                            size="small"
+                            value={updateUser.pass}
+                            onChange={(e) => setUpdateUser({ ...updateUser, pass: e.target.value })}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Email"
+                            type="email"
+                            variant="outlined"
+                            size="small"
+                            value={updateUser.email}
+                            onChange={(e) => setUpdateUser({ ...updateUser, email: e.target.value })}
+                            fullWidth
+                        />
+                        <FormControl fullWidth variant="outlined" size="small">
+                            <InputLabel id="role-select-label">Role</InputLabel>
+                            <Select
+                                labelId="role-select-label"
+                                id="role-select"
+                                value={updateUser.role}
 
-                        <Button variant="contained" size="medium" onClick={handleCreateCounter}>
-                            Create
-                        </Button>
+                                onChange={(e) => setUpdateUser({ ...updateUser, role: e.target.value })}
+                                label="Role">
+                                <MenuItem value="Staff">Staff</MenuItem>
+                                <MenuItem value="Manager">Manager</MenuItem>
+                            </Select>
+                        </FormControl>
 
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button type="submit" variant="contained" size="medium" >
+                                Create
+                            </Button>
+                        </Box>
                     </Box>
                 </Box>
             </Modal>
@@ -516,7 +595,13 @@ function AdAccount() {
                             Staff Profile
                         </Typography>
                         <Chip
-                            label={selectedStaffId?.role === 'ADMIN' ? 'Admin' : 'Staff'}
+                            label={
+                                selectedStaffId?.role === 'ADMIN'
+                                    ? 'Admin'
+                                    : selectedStaffId?.role === 'MANAGER' || selectedStaffId?.role === 'Manager'
+                                        ? 'Manager'
+                                        : 'Staff'
+                            }
                             sx={{
                                 backgroundColor: selectedStaffId?.role === 'ADMIN' ? 'red' : 'blue',
                                 color: 'white',
@@ -524,7 +609,7 @@ function AdAccount() {
                         />
                     </Box>
                     <Box
-                        component="form"
+                       component="form"
                         sx={{
                             border: '1px solid #ccc',
                             padding: 2,
@@ -550,9 +635,8 @@ function AdAccount() {
                                 name="name"
                                 label="Full name"
                                 variant="outlined"
-                                value={selectedStaffId ? selectedStaffId.name : ''}
-                                onChange={(event, value) => setUpdateUserName(event.target.value)} />
-                                sx={{ flex: 1 }}
+
+                                 onChange={(event, value) => setUpdateUserName(event.target.value)}
                                 error={!isNameValid}
                                 helperText={!isNameValid ? 'Name must have more than 5 characters' : ''}
                             />
@@ -563,7 +647,6 @@ function AdAccount() {
                                 disabled={true}
                                 value={'None for now'}
                                 variant="outlined"
-                                sx={{ flex: 1 }}
                                 error={!isPhoneNumberValid}
                                 helperText={!isPhoneNumberValid ? 'Invalid phone' : ''}
                             />
@@ -580,10 +663,8 @@ function AdAccount() {
                                 id="email"
                                 name="email"
                                 label="Email"
-                                variant="outlined"
-                                value={selectedStaffId ? selectedStaffId.email : ''}
-                                onChange={(event, value) => setUpdateUserEmail(event.target.value)} />
-                                sx={{ flex: 1 }}
+
+                                onChange={(event, value) => setUpdateUserEmail(event.target.value)}
                                 error={!isEmailValid}
                                 helperText={!isEmailValid ? 'Invalid email' : ''}
                             />
@@ -593,16 +674,15 @@ function AdAccount() {
                                 label="New Password"
                                 variant="outlined"
                                 type="password"
-                                value={selectedStaffId ? selectedStaffId.password : ''}
-                                onChange={(event, value) => setUpdatePassword(event.target.value)} />
-                                sx={{ flex: 1 }}
+
+                                onChange={(event, value) => setUpdatePassword(event.target.value)}
                                 error={!isPasswordValid}
                                 helperText={!isPasswordValid ? 'Password must have more than 5 characters' : ''}
                             />
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'right', alignItems: 'center', gap: 1 }}>
                             <Button variant="outlined" onClick={handleCloseModalForStaff}>Close</Button>
-                            <Button variant="contained" type="submit">
+                            <Button variant="contained" type="submit"  onClick={() => handleUpdateUser()}>
                                 Save
                             </Button>
                         </Box>
