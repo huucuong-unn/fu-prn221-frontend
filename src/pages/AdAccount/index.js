@@ -68,15 +68,18 @@ function AdAccount() {
             console.log('updateEmail: ', updateUserEmail);
             console.log('updatePassword: ', updatePassword);
             const updateUser = await AccountAPI.getStaffById(selectedStaffId.id);
+            console.log(updateUser);
             const result = await AccountAPI.update(selectedStaffId.id, {
                 name: updateUserName,
                 password: updatePassword,
                 email: updateUserEmail,
+                role: updateUser.role,
+
 
                 income: updateUser.income,
-                createDate: updateUser.createDate,
+                createdDate: updateUser.createdDate,
                 createBy: updateUser.createBy,
-                updateDate: new Date().toISOString(),
+                updatedDate: new Date().toISOString(),
                 updateBy: "admin",
                 status: updateUser.status,
             });
@@ -527,7 +530,7 @@ function AdAccount() {
                         />
                     </Box>
                     <Box
-                        component="form"
+                       component="form"
                         sx={{
                             border: '1px solid #ccc',
                             padding: 2,
@@ -553,8 +556,8 @@ function AdAccount() {
                                 name="name"
                                 label="Full name"
                                 variant="outlined"
-                                value={selectedStaffId ? selectedStaffId.name : ''}
-                                 onChange={(event, value) => setUpdateUserName(event.target.value)} />
+
+                                 onChange={(event, value) => setUpdateUserName(event.target.value)}
                                 error={!isNameValid}
                                 helperText={!isNameValid ? 'Name must have more than 5 characters' : ''}
                             />
@@ -581,9 +584,8 @@ function AdAccount() {
                                 id="email"
                                 name="email"
                                 label="Email"
-                                variant="outlined"
-                                value={selectedStaffId ? selectedStaffId.email : ''}
-                                onChange={(event, value) => setUpdateUserEmail(event.target.value)} />
+
+                                onChange={(event, value) => setUpdateUserEmail(event.target.value)}
                                 error={!isEmailValid}
                                 helperText={!isEmailValid ? 'Invalid email' : ''}
                             />
@@ -593,15 +595,15 @@ function AdAccount() {
                                 label="New Password"
                                 variant="outlined"
                                 type="password"
-                                value={selectedStaffId ? selectedStaffId.password : ''}
-                                onChange={(event, value) => setUpdatePassword(event.target.value)} />
+
+                                onChange={(event, value) => setUpdatePassword(event.target.value)}
                                 error={!isPasswordValid}
                                 helperText={!isPasswordValid ? 'Password must have more than 5 characters' : ''}
                             />
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'right', alignItems: 'center', gap: 1 }}>
                             <Button variant="outlined" onClick={handleCloseModalForStaff}>Close</Button>
-                            <Button variant="contained" type="submit"  onClick={() => handleUpdateUser()}>>
+                            <Button variant="contained" type="submit"  onClick={() => handleUpdateUser()}>
                                 Save
                             </Button>
                         </Box>
