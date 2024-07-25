@@ -18,6 +18,12 @@ const AccountAPI = {
         return axiosClient.get(url, { params });
     },
 
+    update(id, data) {
+        const url = `/v1/user/update/${id}`;
+        return axiosClient.put(url, data);
+    },
+
+
     getUser(params = { page: 1, size: 10 }) {
         const url = `/v1/user`;
         return axiosClient.get(url, { params });

@@ -53,11 +53,40 @@ function AdAccount() {
     const [newCounterName, setNewCounterName] = useState('');
     const [currentCounterName, setCurrentCounterName] = useState('');
     const [countersData, setCountersData] = useState([]);
-    const [staffsData, setStaffsData] = useState([]);
+
     const [staffModalData, setStaffsModalData] = useState([]);
     const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
-    const [updateCounterName, setUpdateCounterName] = useState();
+    const [updateUserName, setUpdateUserName] = useState();
+    const [updateUserEmail, setUpdateUserEmail] = useState();
+    const [updatePassword, setUpdatePassword] = useState();
+
+
+    const handleUpdateUser = async () => {
+        try {
+            console.log('updateFullName: ', updateUserName);
+            console.log('updateEmail: ', updateUserEmail);
+            console.log('updatePassword: ', updatePassword);
+            const updateCounter = await AccountAPI.getStaffById(selectedStaffId.id);
+            const result = await AccountAPI.update(selectedStaffId.id, {
+                name: updateUserName,
+                income: updateCounter.income,
+                createDate: updateCounter.createDate,
+                createBy: updateCounter.createBy,
+                updateDate: new Date().toISOString(),
+                updateBy: "admin",
+                status: updateCounter.status,
+            });
+            console.log(result);
+
+            window.alert('Update successfully');
+            handleCloseEditModal();
+            window.location.reload();
+        } catch (e) {
+            console.log(e);
+        }
+
+    }
 
 
     const formatCurrency = (value) => {
@@ -249,8 +278,15 @@ function AdAccount() {
         setIsCreateModalOpen(false);
     };
 
-    const handleOpenModalForStaff = () => {
-        setIsModalOpenForStaff(true);
+    const handleOpenModalForStaff = async (staffId) => {
+        try {
+            const staffData = await AccountAPI.getStaffById(staffId);
+
+            setSelectedStaffId(staffData);
+          setIsModalOpenForStaff(true)
+        } catch (error) {
+            console.error("Error fetching staff details:", error);
+        }
     };
 
     const handleCloseModalForStaff = () => {
@@ -273,13 +309,35 @@ function AdAccount() {
         setOpenConfirmModal(false);
     };
 
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setSelectedStaffId((prev) => ({
+            ...prev,
+            [id]: value,
+        }));
+    };
+
+    const handleSave = async () => {
+        // Add validation logic here
+        const isValid = true; // Replace with actual validation checks
+
+        if (isValid) {
+            try {
+                await AccountAPI.update(selectedStaffId.id, selectedStaffId);
+                handleCloseModalForStaff(); // Close the modal on success
+            } catch (error) {
+                console.error("Error updating staff details:", error);
+            }
+        }
+    };
+
 
 
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentCounterName();
-        setStaffsData();
+
 
     };
 
@@ -308,7 +366,7 @@ function AdAccount() {
                                 Currently working at Counter
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Income
+                                Income All the time
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Role
@@ -328,7 +386,7 @@ function AdAccount() {
                                         cursor: 'pointer',
                                     },
                                 }}
-                                onClick={() => handleOpenModalForStaff()}
+                                onClick={() => handleOpenModalForStaff(staff.id)}
                             >
                                 <TableCell component="th" scope="row">
                                     {index + 1}
@@ -354,7 +412,7 @@ function AdAccount() {
                                     <Chip
                                         label={staff.role}
                                         sx={{
-                                            backgroundColor: staff.role === 'Admin' ? 'red' : 'blue',
+                                            backgroundColor: staff.role === 'ADMIN' ? 'red' : 'blue',
                                             color: 'white',
                                         }}
                                     />
@@ -458,9 +516,9 @@ function AdAccount() {
                             Staff Profile
                         </Typography>
                         <Chip
-                            label="Admin"
+                            label={selectedStaffId?.role === 'ADMIN' ? 'Admin' : 'Staff'}
                             sx={{
-                                backgroundColor: 'red',
+                                backgroundColor: selectedStaffId?.role === 'ADMIN' ? 'red' : 'blue',
                                 color: 'white',
                             }}
                         />
@@ -489,9 +547,11 @@ function AdAccount() {
                         >
                             <TextField
                                 id="name"
-                                name="Name"
+                                name="name"
                                 label="Full name"
                                 variant="outlined"
+                                value={selectedStaffId ? selectedStaffId.name : ''}
+                                onChange={(event, value) => setUpdateUserName(event.target.value)} />
                                 sx={{ flex: 1 }}
                                 error={!isNameValid}
                                 helperText={!isNameValid ? 'Name must have more than 5 characters' : ''}
@@ -500,6 +560,8 @@ function AdAccount() {
                                 id="phoneNumber"
                                 name="phoneNumber"
                                 label="Phone number"
+                                disabled={true}
+                                value={'None for now'}
                                 variant="outlined"
                                 sx={{ flex: 1 }}
                                 error={!isPhoneNumberValid}
@@ -519,6 +581,8 @@ function AdAccount() {
                                 name="email"
                                 label="Email"
                                 variant="outlined"
+                                value={selectedStaffId ? selectedStaffId.email : ''}
+                                onChange={(event, value) => setUpdateUserEmail(event.target.value)} />
                                 sx={{ flex: 1 }}
                                 error={!isEmailValid}
                                 helperText={!isEmailValid ? 'Invalid email' : ''}
@@ -526,15 +590,18 @@ function AdAccount() {
                             <TextField
                                 id="password"
                                 name="password"
-                                label="Password"
+                                label="New Password"
                                 variant="outlined"
+                                type="password"
+                                value={selectedStaffId ? selectedStaffId.password : ''}
+                                onChange={(event, value) => setUpdatePassword(event.target.value)} />
                                 sx={{ flex: 1 }}
                                 error={!isPasswordValid}
                                 helperText={!isPasswordValid ? 'Password must have more than 5 characters' : ''}
                             />
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'right', alignItems: 'center', gap: 1 }}>
-                            <Button variant="outlined">Close</Button>
+                            <Button variant="outlined" onClick={handleCloseModalForStaff}>Close</Button>
                             <Button variant="contained" type="submit">
                                 Save
                             </Button>
@@ -542,6 +609,7 @@ function AdAccount() {
                     </Box>
                 </Box>
             </Modal>
+
         </Box>
     );
 }
