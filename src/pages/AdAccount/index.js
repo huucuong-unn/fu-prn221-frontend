@@ -35,6 +35,7 @@ import { useEffect, useState } from 'react';
 
 
 import AccountAPI from '~/api/AccountAPI';
+import axios from 'axios';
 
 
 
@@ -70,6 +71,25 @@ function AdAccount() {
        pass:'',
         role:''
     });
+    const handleStatusChange = async (staffId, currentStatus) => {
+        const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+        try {
+            // Make API call to change status
+            await AccountAPI.changeStatus(staffId);
+
+            // Update local state to reflect the new status
+            setStaffs(prevStaffs => prevStaffs.map(staff =>
+                staff.id === staffId
+                    ? { ...staff, status: newStatus }
+                    : staff
+            ));
+            window.location.reload();
+        } catch (error) {
+            // Handle API call error
+            console.error('Failed to update status:', error);
+        }
+    };
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -381,6 +401,7 @@ function AdAccount() {
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>Income All the time</TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>Role</TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -391,7 +412,7 @@ function AdAccount() {
                                     '&:last-child td, &:last-child th': { border: 0 },
                                     '&:hover': { cursor: 'pointer' },
                                 }}
-                                onClick={() => handleOpenModalForStaff(staff.id)}
+                                onDoubleClick={() => handleOpenModalForStaff(staff.id)}
                             >
                                 <TableCell component="th" scope="row">
                                     {page * rowsPerPage + index + 1}
@@ -421,6 +442,15 @@ function AdAccount() {
                                 </TableCell>
                                 <TableCell align="left">
                                     {staff.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                </TableCell>
+                                <TableCell align="left">
+                                    <Button
+                                        variant="contained"
+                                        color={staff.status === 'ACTIVE' ? 'secondary' : 'primary'}
+                                        onClick={() => handleStatusChange(staff.id)}
+                                    >
+                                        {staff.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
