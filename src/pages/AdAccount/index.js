@@ -35,9 +35,7 @@ import { useEffect, useState } from 'react';
 
 
 import AccountAPI from '~/api/AccountAPI';
-import { getCounterById, getStaffById } from '~/api/OldMethod/getByID';
-import UserCounterAPI from '~/api/UserCounterAPI';
-import CounterAPI from '~/api/CounterAPI';
+
 
 
 function AdAccount() {
@@ -384,7 +382,7 @@ function AdAccount() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {staffs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((staff, index) => (
+                        {staffs.map((staff, index) => (
                             <TableRow
                                 key={index}
                                 sx={{
