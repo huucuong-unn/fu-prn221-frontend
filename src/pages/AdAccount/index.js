@@ -132,6 +132,8 @@ function AdAccount() {
                 console.log('Counter Data:', counterData);
                 console.log('User Counter Data:', userCounterData);
 
+
+
                 // Set state with the extracted data
                 setStaffs(staffData.listResult);
                 setCounters(counterData);
@@ -435,7 +437,7 @@ function AdAccount() {
                         setRowsPerPage(parseInt(event.target.value, 10));
                         setPage(0);
                     }}
-                    />
+                />
             </TableContainer>
 
 

@@ -20,7 +20,13 @@ import {
     IconButton,
     Chip,
     CircularProgress,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    TablePagination,
 } from '@mui/material';
+
 
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -58,6 +64,10 @@ function AdCounter() {
     const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
     const [updateCounterName, setUpdateCounterName] = useState();
+
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     //
     // const handleOpenCounterModal = async () => {
@@ -123,6 +133,9 @@ function AdCounter() {
                 console.log('Staff Data:', staffData);
                 console.log('Counter Data:', counterData);
                 console.log('User Counter Data:', userCounterData);
+
+                const totalRecords = staffData.totalPages;
+                setTotalRecords(totalRecords);
 
                 // Set state with the extracted data
                 setStaffs(staffData.listResult);
@@ -562,7 +575,21 @@ function AdCounter() {
                         ))}
                     </TableBody>
                 </Table>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={totalRecords}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(event, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                    }}
+                />
             </TableContainer>
+
+
 
 
             <Modal open={isModalOpen} onClose={handleCloseModal}>
