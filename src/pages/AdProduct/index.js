@@ -57,6 +57,16 @@ function AdProduct() {
     const [currentSkill, setCurrentSkill] = useState('');
     const [currentSkillId, setCurrentSkillId] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isNameValid, setIsNameValid] = useState(true);
+
+    const [isDescriptionValid, setIsDescriptionValid] = useState(true);
+    const [isWeightValid, setIsWeightValid] = useState(true);
+    const [isCounterIdValid, setIsCounterIdValid] = useState(true);
+    const [isProductCodeValid, setIsProductCodeValid] = useState(true);
+    const [isProductTypeIdValid, setIsProductTypeIdValid] = useState(true);
+    const [isMaterialIdValid, setIsMaterialIdValid] = useState(true);
+    const [isStoneIdsValid, setIsStoneIdsValid] = useState(true);
+
     const [createData, setCreateData] = useState({
         ProductTypeId: '',
         Name: '',
@@ -135,9 +145,22 @@ function AdProduct() {
             }
         };
         getAll();
-    }, [params]);
+    }, [params, createProducts]);
 
     const handleCloseBtn = () => {
+        setIsCounterIdValid(true);
+
+        setIsDescriptionValid(true);
+
+        setIsNameValid(true);
+        setIsProductCodeValid(true);
+
+        setIsProductTypeIdValid(true);
+
+        setIsWeightValid(true);
+
+        setIsMaterialIdValid(true);
+        setIsStoneIdsValid(true);
         setIsCreateModalOpen(false);
         setCreateData({
             ProductTypeId: '',
@@ -156,6 +179,20 @@ function AdProduct() {
     };
 
     const handleCloseCreateModal = () => {
+
+        setIsCounterIdValid(true);
+
+        setIsDescriptionValid(true);
+
+        setIsNameValid(true);
+        setIsProductCodeValid(true);
+
+        setIsProductTypeIdValid(true);
+
+        setIsWeightValid(true);
+
+        setIsMaterialIdValid(true);
+        setIsStoneIdsValid(true);
         setIsCreateModalOpen(false);
     };
 
@@ -208,23 +245,89 @@ function AdProduct() {
 
     const handleCreate = async () => {
         try {
-            const getAllProduct = await ProductAPI.createProduct(createData)
-            setCreateProducts(getAllProduct);
-            setCreateData({
-                ProductTypeId: '',
-                Name: '',
-                Description: '',
-                Weight: '',
-                CounterId: "",
-                ProductCode: '',
-                MaterialId: '',
-                StoneIds: [],
-            })
-            setIsCreateModalOpen(false);
+            let result = true;
+            console.log(createData);
+
+            if (createData.CounterId === '') {
+                setIsCounterIdValid(false);
+                result = false;
+            } else {
+                setIsCounterIdValid(true);
+            }
+
+            if (createData.Description.trim() === '') {
+                setIsDescriptionValid(false);
+                result = false;
+            } else {
+                setIsDescriptionValid(true);
+            }
+
+            if (createData.Name.trim() === '') {
+                console.log('name not valid');
+                setIsNameValid(false);
+                result = false;
+            } else {
+                setIsNameValid(true);
+            }
+
+            if (createData.ProductCode === '') {
+                setIsProductCodeValid(false);
+                result = false;
+            } else {
+                setIsProductCodeValid(true);
+            }
+
+            if (createData.ProductTypeId === '') {
+                setIsProductTypeIdValid(false);
+                result = false;
+            } else {
+                setIsProductTypeIdValid(true);
+            }
+
+            if (createData.Weight === '' || createData.Weight <= 0) {
+                setIsWeightValid(false);
+                result = false;
+            } else {
+                setIsWeightValid(true);
+            }
+
+            if (createData.MaterialId === '') {
+                setIsMaterialIdValid(false);
+                result = false;
+            } else {
+                setIsMaterialIdValid(true);
+            }
+
+            if (createData.StoneIds.length === 0) {
+                setIsStoneIdsValid(false);
+                result = false;
+            } else {
+                setIsStoneIdsValid(true);
+            }
+
+            if (result) {
+                // Proceed with API call or other actions
+                const getAllProduct = await ProductAPI.createProduct(createData);
+                setCreateProducts(getAllProduct);
+                // If all validations pass, clear the form data
+                setCreateData({
+                    ProductTypeId: '',
+                    Name: '',
+                    Description: '',
+                    Weight: '',
+                    CounterId: '',
+                    ProductCode: '',
+                    MaterialId: '',
+                    StoneIds: [],
+                });
+                setIsCreateModalOpen(false);
+
+
+            }
         } catch (error) {
             console.log(error);
         }
-    }
+    };
 
     useEffect(() => {
         setCreateData({ ...createData, StoneIds: selectedSkillsId })
@@ -337,10 +440,10 @@ function AdProduct() {
                                 Material
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Weight
+                                Weight (gram)
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Price
+                                Price (VND)
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Counter
@@ -439,6 +542,8 @@ function AdProduct() {
                                     onChange={(event) => {
                                         setCreateData({ ...createData, Name: event.target.value });
                                     }}
+                                    error={!isNameValid}
+                                    helperText={!isNameValid ? 'Name is required' : ''}
                                 />
                                 <TextField
                                     id="productCode"
@@ -449,6 +554,8 @@ function AdProduct() {
                                     onChange={(event) => {
                                         setCreateData({ ...createData, ProductCode: event.target.value });
                                     }}
+                                    error={!isProductCodeValid}
+                                    helperText={!isProductCodeValid ? 'Product Code is required' : ''}
                                 />
                             </Box>
                             <Box
@@ -470,7 +577,8 @@ function AdProduct() {
                                         setCreateData({ ...createData, ProductTypeId: selectedProductTypeId });
                                     }}
                                     sx={{ width: 300, flex: 1 }}
-                                    renderInput={(params) => <TextField {...params} label="Product Type" />}
+                                    renderInput={(params) => <TextField {...params} label="Product Type" error={!isProductTypeIdValid}
+                                        helperText={!isProductTypeIdValid ? 'Product Type is required' : ''} />}
                                 />
                                 <Autocomplete
                                     disablePortal
@@ -483,7 +591,9 @@ function AdProduct() {
                                         setCreateData({ ...createData, MaterialId: selectedMaterialId });
                                     }}
                                     sx={{ width: 300, flex: 1 }}
-                                    renderInput={(params) => <TextField {...params} label="Gold Type" />}
+                                    renderInput={(params) => <TextField {...params} label="Gold Type" error={!isMaterialIdValid}
+                                        helperText={!isMaterialIdValid ? 'Material is required' : ''} />}
+
                                 />
                             </Box>
                             <Box
@@ -504,6 +614,8 @@ function AdProduct() {
                                     onChange={(event) => {
                                         setCreateData({ ...createData, Description: event.target.value });
                                     }}
+                                    error={!isDescriptionValid}
+                                    helperText={!isDescriptionValid ? 'Description is required' : ''}
                                 />
                             </Box>
                             <Box sx={{
@@ -533,6 +645,8 @@ function AdProduct() {
                                         <TextField
                                             {...params}
                                             label="Stones"
+                                            error={!isStoneIdsValid}
+                                            helperText={!isStoneIdsValid ? 'Stone is required' : ''}
                                         />
                                     )}
                                 />
@@ -566,13 +680,16 @@ function AdProduct() {
                                         setCreateData({ ...createData, CounterId: selectedCounterId });
                                     }}
                                     sx={{ width: 300, flex: 1 }}
-                                    renderInput={(params) => <TextField {...params} label="Counter" />}
+                                    renderInput={(params) => <TextField {...params} label="Counter" error={!isCounterIdValid}
+                                        helperText={!isCounterIdValid ? 'Counter is required' : ''} />}
+
                                 />
                                 <TextField
                                     id="weight"
                                     name="weight"
                                     label="Weight"
                                     variant="outlined"
+                                    type='number'
                                     sx={{ flex: 1 }}
                                     onChange={(event) => {
                                         const newValue = event.target.value;
@@ -581,6 +698,8 @@ function AdProduct() {
                                             Weight: newValue === "" ? "" : parseFloat(newValue)
                                         });
                                     }}
+                                    error={!isWeightValid}
+                                    helperText={!isWeightValid ? 'Weight must greater than 0' : ''}
                                 />
                             </Box>
                             <Box

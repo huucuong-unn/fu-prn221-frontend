@@ -436,7 +436,7 @@ function AdDashboard() {
                             <TableBody>
                                 {dataForTop5Customer.map((customer, index) => (
                                     <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell scope="row">{index}</TableCell>
+                                        <TableCell scope="row">{index + 1}</TableCell>
                                         <TableCell scope="row">{customer.name}</TableCell>
                                         <TableCell align="left">{customer.phoneNumber}</TableCell>
                                         <TableCell align="left">{customer.totalOrder}</TableCell>
