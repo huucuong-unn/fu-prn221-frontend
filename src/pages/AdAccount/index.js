@@ -67,15 +67,18 @@ function AdAccount() {
             console.log('updateFullName: ', updateUserName);
             console.log('updateEmail: ', updateUserEmail);
             console.log('updatePassword: ', updatePassword);
-            const updateCounter = await AccountAPI.getStaffById(selectedStaffId.id);
+            const updateUser = await AccountAPI.getStaffById(selectedStaffId.id);
             const result = await AccountAPI.update(selectedStaffId.id, {
                 name: updateUserName,
-                income: updateCounter.income,
-                createDate: updateCounter.createDate,
-                createBy: updateCounter.createBy,
+                password: updatePassword,
+                email: updateUserEmail,
+
+                income: updateUser.income,
+                createDate: updateUser.createDate,
+                createBy: updateUser.createBy,
                 updateDate: new Date().toISOString(),
                 updateBy: "admin",
-                status: updateCounter.status,
+                status: updateUser.status,
             });
             console.log(result);
 
@@ -280,9 +283,9 @@ function AdAccount() {
 
     const handleOpenModalForStaff = async (staffId) => {
         try {
-            const staffData = await AccountAPI.getStaffById(staffId);
+            const selectedStaff = await AccountAPI.getStaffById(staffId);
 
-            setSelectedStaffId(staffData);
+            setSelectedStaffId(selectedStaff);
           setIsModalOpenForStaff(true)
         } catch (error) {
             console.error("Error fetching staff details:", error);
@@ -317,19 +320,19 @@ function AdAccount() {
         }));
     };
 
-    const handleSave = async () => {
-        // Add validation logic here
-        const isValid = true; // Replace with actual validation checks
-
-        if (isValid) {
-            try {
-                await AccountAPI.update(selectedStaffId.id, selectedStaffId);
-                handleCloseModalForStaff(); // Close the modal on success
-            } catch (error) {
-                console.error("Error updating staff details:", error);
-            }
-        }
-    };
+    // const handleSave = async () => {
+    //     // Add validation logic here
+    //     const isValid = true; // Replace with actual validation checks
+    //
+    //     if (isValid) {
+    //         try {
+    //             await AccountAPI.update(selectedStaffId.id, selectedStaffId);
+    //             handleCloseModalForStaff(); // Close the modal on success
+    //         } catch (error) {
+    //             console.error("Error updating staff details:", error);
+    //         }
+    //     }
+    // };
 
 
 
@@ -551,8 +554,7 @@ function AdAccount() {
                                 label="Full name"
                                 variant="outlined"
                                 value={selectedStaffId ? selectedStaffId.name : ''}
-                                onChange={(event, value) => setUpdateUserName(event.target.value)} />
-                                sx={{ flex: 1 }}
+                                 onChange={(event, value) => setUpdateUserName(event.target.value)} />
                                 error={!isNameValid}
                                 helperText={!isNameValid ? 'Name must have more than 5 characters' : ''}
                             />
@@ -563,7 +565,6 @@ function AdAccount() {
                                 disabled={true}
                                 value={'None for now'}
                                 variant="outlined"
-                                sx={{ flex: 1 }}
                                 error={!isPhoneNumberValid}
                                 helperText={!isPhoneNumberValid ? 'Invalid phone' : ''}
                             />
@@ -583,7 +584,6 @@ function AdAccount() {
                                 variant="outlined"
                                 value={selectedStaffId ? selectedStaffId.email : ''}
                                 onChange={(event, value) => setUpdateUserEmail(event.target.value)} />
-                                sx={{ flex: 1 }}
                                 error={!isEmailValid}
                                 helperText={!isEmailValid ? 'Invalid email' : ''}
                             />
@@ -595,14 +595,13 @@ function AdAccount() {
                                 type="password"
                                 value={selectedStaffId ? selectedStaffId.password : ''}
                                 onChange={(event, value) => setUpdatePassword(event.target.value)} />
-                                sx={{ flex: 1 }}
                                 error={!isPasswordValid}
                                 helperText={!isPasswordValid ? 'Password must have more than 5 characters' : ''}
                             />
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'right', alignItems: 'center', gap: 1 }}>
                             <Button variant="outlined" onClick={handleCloseModalForStaff}>Close</Button>
-                            <Button variant="contained" type="submit">
+                            <Button variant="contained" type="submit"  onClick={() => handleUpdateUser()}>>
                                 Save
                             </Button>
                         </Box>
