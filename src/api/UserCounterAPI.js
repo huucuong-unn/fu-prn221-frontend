@@ -18,6 +18,11 @@ const UserCounterAPI = {
     },
 
 
+    changeUserCounterStatus(staffId, counterId,  includeAuthorization = false) {
+        return axiosClient.delete(`/v1/promotion/change-status/${staffId}/${counterId}`);
+    },
+
+
 };
 
 export default UserCounterAPI;

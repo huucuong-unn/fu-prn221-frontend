@@ -35,7 +35,7 @@ import UserCounterAPI from '~/api/UserCounterAPI';
 import CounterAPI from '~/api/CounterAPI';
 
 
-function AdCounter() {
+function AdAccount() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,42 +59,42 @@ function AdCounter() {
     const [selectedStaffId, setSelectedStaffId] = useState(null);
     const [updateCounterName, setUpdateCounterName] = useState();
 
-    //
-    // const handleOpenCounterModal = async () => {
-    //     setIsModalOpen(true);
-    //     try {
-    //         setLoading(true);
-    //         const userCounterData = await AccountAPI.getUserCounterData(); // Fetch userCounter data
-    //
-    //         if (userCounterData.userCounters.length > 0) {
-    //             const counterPromises = userCounterData.userCounters.map(async (userCounter) => {
-    //                 const counterId = userCounter.counterId;
-    //                 const staffId = userCounter.staffId;
-    //
-    //                 // Fetch counter and staff details based on IDs
-    //                 const counterData = await getCounterById(counterId);
-    //                 const staffData = await getStaffById(staffId);
-    //
-    //                 setCurrentCounterName(counterData.name);
-    //
-    //                 return { counterData, staffData };
-    //             });
-    //
-    //             const results = await Promise.all(counterPromises);
-    //
-    //             // Separate countersData and staffsData from results
-    //             const fetchedCounters = results.map((result) => result.counterData);
-    //             const fetchedStaffs = results.map((result) => result.staffData);
-    //
-    //             setCountersData(fetchedCounters);
-    //             setStaffsData(fetchedStaffs);
-    //         }
-    //     } catch (error) {
-    //         setError(error.message);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+
+    const handleOpenCounterModal = async () => {
+        setIsModalOpen(true);
+        try {
+            setLoading(true);
+            const userCounterData = await AccountAPI.getUserCounterData(); // Fetch userCounter data
+
+            if (userCounterData.userCounters.length > 0) {
+                const counterPromises = userCounterData.userCounters.map(async (userCounter) => {
+                    const counterId = userCounter.counterId;
+                    const staffId = userCounter.staffId;
+
+                    // Fetch counter and staff details based on IDs
+                    const counterData = await getCounterById(counterId);
+                    const staffData = await getStaffById(staffId);
+
+                    setCurrentCounterName(counterData.name);
+
+                    return { counterData, staffData };
+                });
+
+                const results = await Promise.all(counterPromises);
+
+                // Separate countersData and staffsData from results
+                const fetchedCounters = results.map((result) => result.counterData);
+                const fetchedStaffs = results.map((result) => result.staffData);
+
+                setCountersData(fetchedCounters);
+                setStaffsData(fetchedStaffs);
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
 
@@ -111,8 +111,8 @@ function AdCounter() {
             try {
                 // Fetch data from APIs concurrently
 
-                    AccountAPI.getCounterData()
-                    AccountAPI.getUserCounterData()
+                AccountAPI.getCounterData()
+                AccountAPI.getUserCounterData()
                 // Extract data from responses
                 const staffData = await AccountAPI.getStaffData(); // Assuming 'listResult' is the key
                 const counterData = await AccountAPI.getCounterData();
@@ -130,23 +130,42 @@ function AdCounter() {
 
                 setUserCounters(userCounterData.listResult);
 
-                const updatedStaffList = staffData.listResult.map(staff => {
-                    const userCounter = userCounterData.listResult.find(uc => uc.staffId === staff.id);
-                    let workingAtCounter = 'No counter assigned';
 
-                    if (userCounter && userCounter.status.toLowerCase() === 'active') {
-                        const counter = counterData.find(c => c.id === userCounter.counterId);
-                        if (counter) {
-                            workingAtCounter = counter.name;
+                const updatedStaffList = [];
+                // Process user counters to find active counters and corresponding staff
+
+                for (const userCounter of userCounterData.listResult) {
+                    if (userCounter.status === 'ACTIVE' || userCounter.status === 'active') {
+
+
+
+                        const counter =  (await AccountAPI.getCounterById( userCounter.counterId));
+                        const staff = (await AccountAPI.getStaffById( userCounter.staffId));
+
+                        console.log('Counter:', counter);
+                        console.log('Staff:', staff);
+
+                        console.log('Staff id:', staff.id);
+                        const updatedStaff = {
+                            ...staffData.find(staffs => staffs.id === staff.id ),
+                            workingAtCounter: counter.name,
+
+                        };
+
+                        console.log("HELLO VIETNAM");
+                        console.log(updatedStaff);
+
+                        if (updatedStaff) {
+                            updatedStaffList.push(updatedStaff);
+                        }
+                    } else {
+                        const existingStaff = staffData.find(staff => staff.id === userCounter.staffId);
+                        if (existingStaff) {
+                            updatedStaffList.push(existingStaff);
                         }
                     }
-                    console.log(workingAtCounter);
 
-                    return {
-                        ...staff,
-                        workingAtCounter
-                    };
-                });
+                }
                 console.log('Staff list:', updatedStaffList);
                 setStaffs(updatedStaffList);
                 setUserCounters(userCounterData);
@@ -278,45 +297,6 @@ function AdCounter() {
             handleCloseCreateModal(); // Close the modal
         } catch (error) {
             console.error('Error creating counter:', error);
-        }
-    };
-    const handleDelete = async () => {
-        try {
-            // Assume staffId and counterId are available
-            const staffId = "";
-            const counterId = "";
-
-            // Call the API to change the status
-            await AccountAPI.changeUserCounterStatus(staffId, counterId);
-
-
-          await AccountAPI.changeStatus(counterId);
-
-            // Handle any success actions, e.g., update state, show notification
-            console.log('Status changed successfully');
-        } catch (error) {
-            // Handle error, e.g., show notification
-            console.error('Failed to change status', error);
-        }
-    };
-
-    const handleChangeStaus = async () => {
-        try {
-            // Assume staffId and counterId are available
-            const staffId = ""
-            const counterId = ""
-
-            // Call the API to change the status
-            await AccountAPI.changeUserCounterStatus(staffId, counterId);
-
-
-            await AccountAPI.changeStatus(counterId);
-
-            // Handle any success actions, e.g., update state, show notification
-            console.log('Status changed successfully');
-        } catch (error) {
-            // Handle error, e.g., show notification
-            console.error('Failed to change status', error);
         }
     };
 
@@ -645,7 +625,7 @@ function AdCounter() {
                     )}
                 </Box>
             </Modal>
-            
+
 
             <Modal open={openConfirmModal} onClose={handleCloseConfirmModal}>
                 <Box
@@ -666,7 +646,7 @@ function AdCounter() {
                         <Button variant="contained" sx={{ mr: 1 }}>
                             Cancel
                         </Button>
-                        <Button variant="contained" color="error"> onClick={handleDelete}
+                        <Button variant="contained" color="error">
                             Delete
                         </Button>
                     </Box>
@@ -844,4 +824,4 @@ function AdCounter() {
     );
 }
 
-export default AdCounter;
+export default AdAccount;

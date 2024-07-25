@@ -26,7 +26,11 @@ const CounterAPI = {
     getById(id) {
         const url = '/v1/counter/' + id;
         return axiosClient.get(url);
-    }
+    },
+    changeStatus(id, includeAuthorization = false) {
+        return axiosClient.delete(`/v1/counter/change-status/${id}`);
+    },
+
 };
 
 export default CounterAPI;
