@@ -56,6 +56,14 @@ function AdProduct() {
         "BUYBACK"
     ]
 
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+            minimumFractionDigits: 0
+        }).format(value);
+    };
+
     useEffect(() => {
         const getAllProductTypes = async () => {
             try {
@@ -266,7 +274,7 @@ function AdProduct() {
                                 <TableCell align="left">{product.productType}</TableCell>
                                 <TableCell align="left">{product.materialName}</TableCell>
                                 <TableCell align="left">{product.weight}</TableCell>
-                                <TableCell align="left">{product.price}</TableCell>
+                                <TableCell align="left">{formatCurrency(product.price)}</TableCell>
                                 <TableCell align="left">{product.counterName}</TableCell>
                                 <TableCell align="left">
                                     <Chip label={product.status}

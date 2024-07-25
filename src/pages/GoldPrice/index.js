@@ -72,6 +72,14 @@ function GoldPrice() {
         }),
     );
 
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+            minimumFractionDigits: 0
+        }).format(value);
+    };
+
     useEffect(() => {
         const getAll = async () => {
             try {
@@ -158,9 +166,13 @@ function GoldPrice() {
                                     {material.name}
                                 </TableCell>
                                 <TableCell align="left" sx={{ maxWidth: '300px' }}>
-                                    {material.buyingPrice}
+                                    {  formatCurrency(material.buyingPrice || '0.00')}
+
                                 </TableCell>
-                                <TableCell align="left">{material.salePrice}</TableCell>
+                                <TableCell align="left">
+                                    { formatCurrency( material.salePrice || '0.00')}
+
+                                </TableCell>
                                 <TableCell align="left">{material.updateDate}</TableCell>
                             </TableRow>
                         ))}
