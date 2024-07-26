@@ -18,10 +18,13 @@ const UserCounterAPI = {
     },
 
 
-    changeUserCounterStatus(staffId, counterId,  includeAuthorization = false) {
+    changeUserCounterStatus(staffId, counterId, includeAuthorization = false) {
         return axiosClient.delete(`/v1/promotion/change-status/${staffId}/${counterId}`);
     },
 
+    getByStaffId(staffId) {
+        return axiosClient.get(`/v1/user-counter/staff/${staffId}`);
+    }
 
 };
 

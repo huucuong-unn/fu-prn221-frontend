@@ -29,6 +29,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CustomerAPI from '~/api/CustomerAPI';
 import PromotionAPI from '~/api/PromotionAPI';
+import UserCounterAPI from '~/api/UserCounterAPI';
+import RequestPromotionAPI from '~/api/RequestPromotionAPI';
 
 
 function AdOrder() {
@@ -56,6 +58,45 @@ function AdOrder() {
     const [promotion, setPromotion] = useState();
 
     const [account, setAccount] = useState();
+    const [requestStatus, setRequestStatus] = useState(null);
+    const [customer, setCustomer] = useState();
+    const [counterIdNow, setCounterIdNow] = useState();
+    const [requestPromotionAPI, setRequestPromotionAPI] = useState();
+
+
+
+    const handleRequestUsePromotion = async () => {
+        try {
+            const response = await RequestPromotionAPI.create(
+                {
+                    customerId: customer?.id,
+                    counterId: counterIdNow,
+                    staffId: account.id,
+                    status: "PENDING",
+                    createdDate: Date.now(),
+                    updatedDate: Date.now(),
+                    createBy: account?.id,
+                    updateBy: account?.id,
+
+                }
+            )
+            setRequestStatus(response.status);
+            setRequestPromotionAPI(response);
+        } catch (error) {
+            console.error('Error requesting promotion:', error);
+        }
+    };
+
+    const handleReloadRequestStatus = async (requestPromotion) => {
+        try {
+            const response = await RequestPromotionAPI.getById(requestPromotion.id);
+            setRequestStatus(response?.status);
+
+        } catch (error) {
+            console.error('Error reloading request status:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchAccount = async () => {
             try {
@@ -67,6 +108,19 @@ function AdOrder() {
         };
         fetchAccount();
     }, []);
+
+
+    const fetchCounterNow = async () => {
+        try {
+            const response = await UserCounterAPI.getByStaffId(account?.id);
+            setCounterIdNow(response.counterId);
+            console.log('Counter:', response);
+            console.log('AccountId: ', account?.id);
+        }
+        catch (error) {
+            console.log('Failed to fetch counter:', error);
+        }
+    };
 
     const fetchOrders = async () => {
         try {
@@ -158,6 +212,9 @@ function AdOrder() {
         setPoints();
         setUsePoint(false);
         setCustomerName();
+        fetchCounterNow();
+        setRequestStatus();
+
 
     };
 
@@ -168,6 +225,7 @@ function AdOrder() {
         setCustomerName();
         setPoints();
         fetchOrders();
+        setRequestStatus();
     };
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -240,7 +298,7 @@ function AdOrder() {
             <p>Tên khách hàng: ${order?.customer?.name}</p>
             <p>Số điện thoại: ${order?.customer?.phone}</p>
             <p>Thời gian giao dịch: ${new Date(order?.createdDate).toLocaleString()}</p>
-            <p>${order.id}</p>
+            <p>Mã đơn hàng: ${order.id}</p>
             <h2>Danh sách sản phẩm:</h2>
         `;
 
@@ -273,6 +331,7 @@ function AdOrder() {
             const response = await CustomerAPI.getByPhone(customerPhone);
             setPoints(response.point);
             setCustomerName(response.name)
+            setCustomer(response);
         } catch (error) {
             console.error('Error fetching points:', error);
         }
@@ -482,14 +541,28 @@ function AdOrder() {
                             <Button variant="contained" onClick={handleCheckPoints}>
                                 Check
                             </Button>
+                            {points && points > 0 && (
+                                <>
+                                    <Button variant="contained" size="medium" onClick={handleRequestUsePromotion}>
+                                        Request
+                                    </Button>
+                                    <Button variant="contained" size="medium" onClick={handleReloadRequestStatus}>
+                                        Reload
+                                    </Button>
+                                </>
+                            )}
                         </Box>
                         {points !== null && (
                             <Box mt={2}>
                                 <InputLabel>Points: {points}</InputLabel>
                             </Box>
                         )}
-                        <Checkbox onChange={() => { setUsePoint(!usePoint); }} /><InputLabel>Use points</InputLabel>
-
+                        <Checkbox
+                            checked={usePoint}
+                            onChange={() => setUsePoint(!usePoint)}
+                            disabled={requestStatus !== 'APPROVED'}
+                        />
+                        <InputLabel>{requestStatus === 'APPROVED' ? 'Use points' : 'Points not approved'}</InputLabel>
                         <Box
                             sx={{
                                 display: 'flex',

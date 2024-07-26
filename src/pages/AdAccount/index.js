@@ -56,12 +56,7 @@ function AdAccount() {
     const [error, setError] = useState(null);
     const [counters, setCounters] = useState([]);
     const [userCounters, setUserCounters] = useState([]);
-    const [newCounterName, setNewCounterName] = useState('');
-    const [currentCounterName, setCurrentCounterName] = useState('');
-    const [countersData, setCountersData] = useState([]);
     const [totalRecords, setTotalRecords] = useState(0);
-    const [staffModalData, setStaffsModalData] = useState([]);
-    const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
     const [updateUserName, setUpdateUserName] = useState();
     const [updateUserEmail, setUpdateUserEmail] = useState();
@@ -97,6 +92,31 @@ function AdAccount() {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+
+
+
+
+    // const handleStatusChange = async (staffId, currentStatus) => {
+    //     const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    //
+    //     try {
+    //         // Make API call to change status
+    //         await AccountAPI.changeStatus(staffId);
+    //
+    //         // Update local state to reflect the new status
+    //         setStaffs(prevStaffs => prevStaffs.map(staff =>
+    //             staff.id === staffId
+    //                 ? { ...staff, status: newStatus }
+    //                 : staff
+    //         ));
+    //         window.location.reload();
+    //     } catch (error) {
+    //         // Handle API call error
+    //         console.error('Failed to update status:', error);
+    //     }
+    // };
+
+
 
     const handleUpdateUser = async () => {
         try {
@@ -405,45 +425,11 @@ function AdAccount() {
         setIsEditModalOpen(false);
     };
 
-    const handleOpenConfirmModal = () => {
-        setOpenConfirmModal(true);
-    };
 
     const handleCloseConfirmModal = () => {
         setOpenConfirmModal(false);
     };
 
-    const handleInputChange = (e) => {
-        const { id, value } = e.target;
-        setSelectedStaffId((prev) => ({
-            ...prev,
-            [id]: value,
-        }));
-    };
-
-    // const handleSave = async () => {
-    //     // Add validation logic here
-    //     const isValid = true; // Replace with actual validation checks
-    //
-    //     if (isValid) {
-    //         try {
-    //             await AccountAPI.update(selectedStaffId.id, selectedStaffId);
-    //             handleCloseModalForStaff(); // Close the modal on success
-    //         } catch (error) {
-    //             console.error("Error updating staff details:", error);
-    //         }
-    //     }
-    // };
-
-
-
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setCurrentCounterName();
-
-
-    };
 
 
 
