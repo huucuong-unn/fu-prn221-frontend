@@ -68,23 +68,67 @@ export const MainListItems = () => {
                         </ListItemIcon>
                         <ListItemText primary="Account" />
                     </ListItemButton>
+
+                    <ListItemButton onClick={() => handleNavigate('/admin/orders')}>
+                        <ListItemIcon>
+                            <ShoppingCartIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Orders" />
+                    </ListItemButton>
+
+                    <ListItemButton onClick={() => handleNavigate('/admin/product')}>
+                        <ListItemIcon>
+                            <LayersIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Product" />
+                    </ListItemButton>
                 </>
 
             ) : (<></>)
             }
-            <ListItemButton onClick={() => handleNavigate('/admin/orders')}>
-                <ListItemIcon>
-                    <ShoppingCartIcon />
-                </ListItemIcon>
-                <ListItemText primary="Orders" />
-            </ListItemButton>
 
-            <ListItemButton onClick={() => handleNavigate('/admin/product')}>
-                <ListItemIcon>
-                    <LayersIcon />
-                </ListItemIcon>
-                <ListItemText primary="Product" />
-            </ListItemButton>
+            {account?.role === 'STAFF' ? (
+                <>
+                    <ListItemButton onClick={() => handleNavigate('/admin/orders')}>
+                        <ListItemIcon>
+                            <ShoppingCartIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Orders" />
+                    </ListItemButton>
+
+                    <ListItemButton onClick={() => handleNavigate('/admin/product')}>
+                        <ListItemIcon>
+                            <LayersIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Product" />
+                    </ListItemButton>
+                </>
+
+            ) : (<></>)
+            }
+
+
+            {account?.role === 'MANAGER' ? (
+                <>
+                    <ListItemButton onClick={() => handleNavigate('/admin/dashboard')}>
+                        <ListItemIcon>
+                            <DashboardIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Dashboard" />
+                    </ListItemButton>
+
+                    <ListItemButton onClick={() => handleNavigate('/admin/request')}>
+                        <ListItemIcon>
+                            <PeopleIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Request" />
+                    </ListItemButton>
+
+                </>
+
+            ) : (<></>)
+            }
+
         </React.Fragment>
     );
 };
