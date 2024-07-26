@@ -73,6 +73,8 @@ function AdAccount() {
         password: '',
         role: ''
     });
+    const [isCreateUser, setIsCreateUser] = useState(false);
+
     const handleStatusChange = async (staffId, currentStatus) => {
         const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
@@ -185,6 +187,7 @@ function AdAccount() {
                 console.log('Staff list:', updatedStaffList);
                 setStaffs(updatedStaffList);
                 setUserCounters(userCounterData);
+                setIsCreateUser(false);
 
             } catch (error) {
                 setError(error.message);
@@ -194,7 +197,7 @@ function AdAccount() {
         };
 
         fetchData();
-    }, [page, rowsPerPage]);
+    }, [page, rowsPerPage, isCreateUser]);
 
 
 
@@ -338,6 +341,8 @@ function AdAccount() {
                 },
                 body: JSON.stringify(newUser),
             });
+
+            setIsCreateUser(true);
 
             if (!response.ok) {
                 throw new Error('Failed to create user');
