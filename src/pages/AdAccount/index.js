@@ -70,7 +70,7 @@ function AdAccount() {
     const [updateUser, setUpdateUser] = useState({
         name: '',
         email: '',
-        pass: '',
+        password: '',
         role: ''
     });
     const handleStatusChange = async (staffId, currentStatus) => {
@@ -103,6 +103,7 @@ function AdAccount() {
             console.log('updatePassword: ', updatePassword);
             const updateUser = await AccountAPI.getStaffById(selectedStaffId.id);
             console.log(updateUser);
+            setUpdatePassword(updateUser.password)
             const result = await AccountAPI.update(selectedStaffId.id, {
                 name: updateUserName,
                 password: updatePassword,
@@ -286,7 +287,7 @@ function AdAccount() {
         const newUser = {
             name: updateUser.name,
             email: updateUser.email,
-            password: updateUser.pass,
+            password: updateUser.password,
             role: updateUser.role,
             status: "ACTIVE",
             createdDate: new Date().toISOString(),
@@ -311,7 +312,7 @@ function AdAccount() {
             setIsEmailValid(true);
         }
 
-        if (updateUser.password.trim() === '') {
+        if (updateUser.password === '') {
             setIsPasswordValid(false);
             isValid = false;
         } else {
@@ -330,7 +331,7 @@ function AdAccount() {
         }
 
         try {
-            const response = await fetch('http://localhost:5036/api/v1/user/create', {
+            const response = await fetch('http://localhost:5036/api/v1/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -518,12 +519,6 @@ function AdAccount() {
             </TableContainer>
 
 
-
-
-
-
-
-
             <Modal open={openConfirmModal} onClose={handleCloseConfirmModal}>
                 <Box
                     sx={{
@@ -570,6 +565,7 @@ function AdAccount() {
                             label="Name"
                             variant="outlined"
                             size="small"
+                            focused
                             value={updateUser.name}
                             onChange={(e) => setUpdateUser({ ...updateUser, name: e.target.value })}
                             error={!isNameValid}
@@ -581,8 +577,8 @@ function AdAccount() {
                             type="password"
                             variant="outlined"
                             size="small"
-                            value={updateUser.pass}
-                            onChange={(e) => setUpdateUser({ ...updateUser, pass: e.target.value })}
+                            focused
+                            onChange={(e) => setUpdateUser({ ...updateUser, password: e.target.value })}
                             error={!isPasswordValid}
                             helperText={!isPasswordValid ? 'Password is required' : ''}
                             fullWidth
@@ -592,6 +588,7 @@ function AdAccount() {
                             type="email"
                             variant="outlined"
                             size="small"
+                            focused
                             value={updateUser.email}
                             onChange={(e) => setUpdateUser({ ...updateUser, email: e.target.value })}
                             error={!isEmailValid}
@@ -606,8 +603,6 @@ function AdAccount() {
                                 value={updateUser.role}
                                 onChange={(e) => setUpdateUser({ ...updateUser, role: e.target.value })}
                                 label="Role">
-
-
 
                                 <MenuItem selected value="STAFF">STAFF</MenuItem>
                                 <MenuItem value="MANAGER">MANAGER</MenuItem>
