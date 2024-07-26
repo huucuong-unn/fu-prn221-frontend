@@ -681,7 +681,7 @@ function AdProduct() {
                                     )}
                                 />
                                 <Button variant="contained" onClick={handleAddSkill}>
-                                    Add Skill
+                                    Add Stone
                                 </Button>
                             </Box>
                             {selectedSkills.length > 0 && (
