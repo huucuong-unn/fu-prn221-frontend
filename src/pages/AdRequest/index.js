@@ -87,6 +87,9 @@ function AdRequest() {
                                 Staff Name
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                CreatedDate
+                            </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Status
                             </TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
@@ -112,6 +115,7 @@ function AdRequest() {
                                 </TableCell>
                                 <TableCell align="left">{request.counterName}</TableCell>
                                 <TableCell align="left">{request.staffName}</TableCell>
+                                <TableCell align="left">{request.createdDate}</TableCell>
                                 <TableCell align="left"><Chip
                                     label={request.status}
                                     sx={{

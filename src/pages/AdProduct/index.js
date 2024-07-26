@@ -30,6 +30,8 @@ import MaterialAPI from '~/api/MaterialAPI';
 import ProductAPI from '~/api/ProductAPI';
 import ProductTypeAPI from '~/api/ProductTypeAPI';
 import StoneAPI from '~/api/StoneAPI';
+import AccountAPI from '~/api/AccountAPI';
+
 
 function AdProduct() {
     const [productTypes, setProductTypes] = useState([]);
@@ -67,6 +69,8 @@ function AdProduct() {
     const [isMaterialIdValid, setIsMaterialIdValid] = useState(true);
     const [isStoneIdsValid, setIsStoneIdsValid] = useState(true);
     const [isUpdateStatus, setIsUpdateStatus] = useState(false);
+    const [account, setAccount] = useState();
+
 
     const [createData, setCreateData] = useState({
         ProductTypeId: '',
@@ -92,6 +96,18 @@ function AdProduct() {
             minimumFractionDigits: 0
         }).format(value);
     };
+
+    useEffect(() => {
+        const fetchAccount = async () => {
+            try {
+                const response = await AccountAPI.getLoggedUser();
+                setAccount(response);
+            } catch (error) {
+                console.log('Failed to fetch account:', error);
+            }
+        };
+        fetchAccount();
+    }, []);
 
     useEffect(() => {
         const getAllProductTypes = async () => {
@@ -470,9 +486,12 @@ function AdProduct() {
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Status
                             </TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
-                                Change status
-                            </TableCell>
+                            {account?.role === 'ADMIN' ? (
+                                <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                    Change status
+                                </TableCell>
+                            ) : (<></>)}
+
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -517,9 +536,12 @@ function AdProduct() {
                                         }}
                                     />
                                 </TableCell>
-                                <TableCell align="left">
-                                    {product.status === "BUYBACK" || product.status === "AVAILABLE" || product.status === "INAVAILABLE" ? <Button variant='contained' color='success' onClick={() => handleUpdateStatus(product.id)}>Change</Button> : <>No Action</>}
-                                </TableCell>
+                                {account?.role === 'ADMIN' ? (
+                                    <TableCell align="left">
+                                        {product.status === "BUYBACK" || product.status === "AVAILABLE" || product.status === "INAVAILABLE" ? <Button variant='contained' color='success' onClick={() => handleUpdateStatus(product.id)}>Change</Button> : <></>}
+                                    </TableCell>
+                                ) : (<></>)}
+
                             </TableRow>
                         ))}
                     </TableBody>
