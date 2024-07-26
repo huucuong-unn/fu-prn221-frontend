@@ -191,6 +191,10 @@ function AdAccount() {
                     if (staff.role === "ADMIN") {
                         workingAtCounter = 'THIS IS ADMIN'
                     }
+                    if (staff.role === "MANAGER") {
+                        workingAtCounter = 'THIS IS MANAGER'
+                    }
+
                     if (userCounter && userCounter.status.toLowerCase() === 'active') {
                         const counter = counterData.find(c => c.id === userCounter.counterId);
                         if (counter) {
