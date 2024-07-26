@@ -66,6 +66,7 @@ function AdProduct() {
     const [isProductTypeIdValid, setIsProductTypeIdValid] = useState(true);
     const [isMaterialIdValid, setIsMaterialIdValid] = useState(true);
     const [isStoneIdsValid, setIsStoneIdsValid] = useState(true);
+    const [isUpdateStatus, setIsUpdateStatus] = useState(false);
 
     const [createData, setCreateData] = useState({
         ProductTypeId: '',
@@ -148,12 +149,17 @@ function AdProduct() {
                 const getAllProduct = await ProductAPI.searchProduct(params);
                 setProducts(getAllProduct.listResult);
                 setTotalPage(getAllProduct.totalPages);
+                setIsUpdateStatus(false);
             } catch (error) {
                 console.log(error);
             }
         };
         getAll();
-    }, [params, createProducts]);
+    }, [params, createProducts, isUpdateStatus]);
+
+    useEffect(() => {
+        console.log(products);
+    }, [products])
 
     const handleCloseBtn = () => {
         setIsCounterIdValid(true);
@@ -356,6 +362,11 @@ function AdProduct() {
         updateProductPrice();
     }, [createData]);
 
+    const handleUpdateStatus = async (id) => {
+        const updatePrice = await ProductAPI.updateProductStatus(id);
+        setIsUpdateStatus(true)
+    }
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -459,6 +470,9 @@ function AdProduct() {
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>
                                 Status
                             </TableCell>
+                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>
+                                Change status
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -485,18 +499,26 @@ function AdProduct() {
                                 <TableCell align="left">{formatCurrency(product.price)}</TableCell>
                                 <TableCell align="left">{product.counterName}</TableCell>
                                 <TableCell align="left">
-                                    <Chip label={product.status}
+                                    <Chip
+                                        label={product.status}
                                         sx={{
                                             backgroundColor:
                                                 product.status === "SALED"
                                                     ? "green"
                                                     : product.status === "BUYBACK"
                                                         ? "#0000FF"
-                                                        : "orange",
+                                                        : product.status === "AVAILABLE" // Thêm điều kiện cho AVAILABLE
+                                                            ? "orange" // Màu xanh lá cây nhạt
+                                                            : product.status === "INAVAILABLE" // Điều kiện cho INAVAILABLE
+                                                                ? "gray" // Màu xám
+                                                                : "orange",
                                             color: "white",
                                             fontWeight: "bold",
                                         }}
                                     />
+                                </TableCell>
+                                <TableCell align="left">
+                                    {product.status === "BUYBACK" || product.status === "AVAILABLE" || product.status === "INAVAILABLE" ? <Button variant='contained' color='success' onClick={() => handleUpdateStatus(product.id)}>Change</Button> : <></>}
                                 </TableCell>
                             </TableRow>
                         ))}

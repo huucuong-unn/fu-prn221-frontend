@@ -12,6 +12,7 @@ import OrderDetailPage from '~/pages/OrderDetailPage';
 import AdCounter from '~/pages/AdCounter';
 import AdProduct from '~/pages/AdProduct';
 import AdAccount from '~/pages/AdAccount';
+import AdRequest from '~/pages/AdRequest';
 
 const publicRoutes = [
     { path: '/', component: AdDashboard, layout: AdminLayout },
@@ -20,6 +21,7 @@ const publicRoutes = [
     { path: '/admin/counter', component: AdCounter, layout: AdminLayout },
     { path: '/admin/account', component: AdAccount, layout: AdminLayout },
     { path: '/admin/product', component: AdProduct, layout: AdminLayout },
+    { path: '/admin/request', component: AdRequest, layout: AdminLayout },
     { path: '/admin/return-policy', component: ReturnPolicy, layout: AdminLayout },
     { path: '/admin/gold-price', component: GoldPrice, layout: AdminLayout },
     { path: '/sign-in', component: SignInSide, layout: null },
