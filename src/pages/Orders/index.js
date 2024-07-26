@@ -61,29 +61,32 @@ function AdOrder() {
     const [requestStatus, setRequestStatus] = useState(null);
     const [customer, setCustomer] = useState();
     const [counterIdNow, setCounterIdNow] = useState();
-    const [requestPromotionAPI, setRequestPromotionAPI] = useState();
+    const [requestPromotion, setRequestPromotion] = useState();
 
 
 
     const handleRequestUsePromotion = async () => {
         try {
+            var req = {
+                customerId: customer?.id,
+                counterId: counterIdNow,
+                staffId: account.id,
+                status: "PENDING",
+                createdDate: new Date().toISOString(),
+                updatedDate: new Date().toISOString(),
+                createBy: account?.id,
+                updateBy: account?.id,
+            }
             const response = await RequestPromotionAPI.create(
-                {
-                    customerId: customer?.id,
-                    counterId: counterIdNow,
-                    staffId: account.id,
-                    status: "PENDING",
-                    createdDate: Date.now(),
-                    updatedDate: Date.now(),
-                    createBy: account?.id,
-                    updateBy: account?.id,
-
-                }
+                req
             )
+            console.log('Request promotion:', req);
             setRequestStatus(response.status);
-            setRequestPromotionAPI(response);
+            setRequestPromotion(response);
+            window.alert('Request promotion successfully');
         } catch (error) {
             console.error('Error requesting promotion:', error);
+            window.alert('Request promotion failed');
         }
     };
 
@@ -91,6 +94,7 @@ function AdOrder() {
         try {
             const response = await RequestPromotionAPI.getById(requestPromotion.id);
             setRequestStatus(response?.status);
+            console.log('Request status:', response);
 
         } catch (error) {
             console.error('Error reloading request status:', error);
@@ -551,6 +555,7 @@ function AdOrder() {
                                     </Button>
                                 </>
                             )}
+                            {/* {requestStatus ? <p>requestStatus</p> : (<></>)} */}
                         </Box>
                         {points !== null && (
                             <Box mt={2}>
@@ -562,7 +567,7 @@ function AdOrder() {
                             onChange={() => setUsePoint(!usePoint)}
                             disabled={requestStatus !== 'APPROVED'}
                         />
-                        <InputLabel>{requestStatus === 'APPROVED' ? 'Use points' : 'Points not approved'}</InputLabel>
+                        <InputLabel>{requestStatus === 'APPROVED' ? 'Manager Aproved !  Use points' : 'Points not approved now'}</InputLabel>
                         <Box
                             sx={{
                                 display: 'flex',

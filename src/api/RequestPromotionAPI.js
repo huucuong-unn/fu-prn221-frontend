@@ -17,11 +17,11 @@ const RequestPromotionAPI = {
     },
 
     getById(id) {
-
+        return axiosClient.get(`/v1/request-promotion/${id}`);
     },
 
     create(data) {
-        return axiosClient.post('/v1/request-promotion/create', data);
+        return axiosClient.post(`/v1/request-promotion/create?customerId=${data.customerId}&productId=${data.productId}&quantity=${data.quantity}&description=${data.description}&status=${data.status}&staffId=${data.staffId}&createdDate=${data.createdDate}&updatedDate=${data.updatedDate}&counterId=${data.counterId}&createBy=${data.createBy}&updateBy=${data.updateBy}`);
     }
 };
 
