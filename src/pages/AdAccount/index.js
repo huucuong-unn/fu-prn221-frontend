@@ -25,6 +25,7 @@ import {
     FormControl,
     InputLabel,
     TablePagination,
+    FormHelperText
 } from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
@@ -45,10 +46,11 @@ function AdAccount() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalOpenForStaff, setIsModalOpenForStaff] = useState(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
+    const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
     const [isNameValid, setIsNameValid] = useState(true);
     const [isEmailValid, setIsEmailValid] = useState(true);
-    const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
     const [isPasswordValid, setIsPasswordValid] = useState(true);
+    const [isRoleValid, setIsRoleValid] = useState(true);
     const [staffs, setStaffs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -67,9 +69,9 @@ function AdAccount() {
     const [updateRole, setUpdateRole] = useState();
     const [updateUser, setUpdateUser] = useState({
         name: '',
-        email:'',
-       pass:'',
-        role:''
+        email: '',
+        pass: '',
+        role: ''
     });
     const handleStatusChange = async (staffId, currentStatus) => {
         const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
@@ -163,8 +165,8 @@ function AdAccount() {
                 const updatedStaffList = staffData.listResult.map(staff => {
                     const userCounter = userCounterData.listResult.find(uc => uc.staffId === staff.id);
                     let workingAtCounter = 'No counter assigned';
-                    if(staff.role === "ADMIN"){
-                      workingAtCounter = 'THIS IS ADMIN'
+                    if (staff.role === "ADMIN") {
+                        workingAtCounter = 'THIS IS ADMIN'
                     }
                     if (userCounter && userCounter.status.toLowerCase() === 'active') {
                         const counter = counterData.find(c => c.id === userCounter.counterId);
@@ -290,8 +292,42 @@ function AdAccount() {
             createdDate: new Date().toISOString(),
             createBy: "admin",
             updatedDate: new Date().toISOString(),
-            updateBy: "",
+            updateBy: "admin",
         };
+
+        let isValid = true;
+
+        if (updateUser.name.trim() === '') {
+            setIsNameValid(false);
+            isValid = false;
+        } else {
+            setIsNameValid(true);
+        }
+
+        if (updateUser.email.trim() === '') {
+            setIsEmailValid(false);
+            isValid = false;
+        } else {
+            setIsEmailValid(true);
+        }
+
+        if (updateUser.password.trim() === '') {
+            setIsPasswordValid(false);
+            isValid = false;
+        } else {
+            setIsPasswordValid(true);
+        }
+
+        if (updateUser.role.trim() === '') {
+            setIsRoleValid(false);
+            isValid = false;
+        } else {
+            setIsRoleValid(true);
+        }
+
+        if (!isValid) {
+            return;
+        }
 
         try {
             const response = await fetch('http://localhost:5036/api/v1/user/create', {
@@ -308,14 +344,35 @@ function AdAccount() {
 
             const createdCounter = await response.json();
             setCounters((prevCounters) => [...prevCounters, createdCounter]);
-            setNewCounterName(''); // Clear the input field
+            setUpdateUser({ name: '', email: '', pass: '', role: '' }); // Clear the form fields
             handleCloseCreateModal(); // Close the modal
+
         } catch (error) {
             console.error('Error creating counter:', error);
         }
     };
-
     const handleCloseCreateModal = () => {
+        const newUser = {
+            name: '',
+            email: '',
+            password: '',
+            role: '',
+            status: "",
+            createdDate: '',
+            createBy: '',
+            updatedDate: '',
+            updateBy: '',
+        };
+        setUpdateUser(newUser);
+
+        setIsNameValid(true);
+
+        setIsEmailValid(true);
+
+        setIsPasswordValid(true);
+
+        setIsRoleValid(true);
+
         setIsCreateModalOpen(false);
     };
 
@@ -324,7 +381,7 @@ function AdAccount() {
             const selectedStaff = await AccountAPI.getStaffById(staffId);
 
             setSelectedStaffId(selectedStaff);
-          setIsModalOpenForStaff(true)
+            setIsModalOpenForStaff(true)
         } catch (error) {
             console.error("Error fetching staff details:", error);
         }
@@ -401,7 +458,6 @@ function AdAccount() {
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>Income All the time</TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>Role</TableCell>
                             <TableCell align="left" sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -441,16 +497,7 @@ function AdAccount() {
                                     />
                                 </TableCell>
                                 <TableCell align="left">
-                                    {staff.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                                </TableCell>
-                                <TableCell align="left">
-                                    <Button
-                                        variant="contained"
-                                        color={staff.status === 'ACTIVE' ? 'secondary' : 'primary'}
-                                        onClick={() => handleStatusChange(staff.id)}
-                                    >
-                                        {staff.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                                    </Button>
+                                    {staff.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -518,13 +565,15 @@ function AdAccount() {
                     <Typography variant="h5" sx={{ mb: 2 }}>
                         Create Account
                     </Typography>
-                    <Box component="form" onSubmit={handleCreateCounter} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <TextField
                             label="Name"
                             variant="outlined"
                             size="small"
                             value={updateUser.name}
                             onChange={(e) => setUpdateUser({ ...updateUser, name: e.target.value })}
+                            error={!isNameValid}
+                            helperText={!isNameValid ? 'Name is required' : ''}
                             fullWidth
                         />
                         <TextField
@@ -534,6 +583,8 @@ function AdAccount() {
                             size="small"
                             value={updateUser.pass}
                             onChange={(e) => setUpdateUser({ ...updateUser, pass: e.target.value })}
+                            error={!isPasswordValid}
+                            helperText={!isPasswordValid ? 'Password is required' : ''}
                             fullWidth
                         />
                         <TextField
@@ -543,24 +594,30 @@ function AdAccount() {
                             size="small"
                             value={updateUser.email}
                             onChange={(e) => setUpdateUser({ ...updateUser, email: e.target.value })}
+                            error={!isEmailValid}
+                            helperText={!isEmailValid ? 'Password is required' : ''}
                             fullWidth
                         />
-                        <FormControl fullWidth variant="outlined" size="small">
+                        <FormControl fullWidth variant="outlined" size="small" error={!isRoleValid}>
                             <InputLabel id="role-select-label">Role</InputLabel>
                             <Select
                                 labelId="role-select-label"
                                 id="role-select"
                                 value={updateUser.role}
-
                                 onChange={(e) => setUpdateUser({ ...updateUser, role: e.target.value })}
                                 label="Role">
-                                <MenuItem value="Staff">Staff</MenuItem>
-                                <MenuItem value="Manager">Manager</MenuItem>
+
+
+
+                                <MenuItem selected value="STAFF">STAFF</MenuItem>
+                                <MenuItem value="MANAGER">MANAGER</MenuItem>
                             </Select>
+                            {!isRoleValid && <FormHelperText error>Role is required</FormHelperText>}
+
                         </FormControl>
 
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                            <Button type="submit" variant="contained" size="medium" >
+                            <Button onClick={handleCreateCounter} type="submit" variant="contained" size="medium" >
                                 Create
                             </Button>
                         </Box>
@@ -609,7 +666,7 @@ function AdAccount() {
                         />
                     </Box>
                     <Box
-                       component="form"
+                        component="form"
                         sx={{
                             border: '1px solid #ccc',
                             padding: 2,
@@ -636,7 +693,7 @@ function AdAccount() {
                                 label="Full name"
                                 variant="outlined"
 
-                                 onChange={(event, value) => setUpdateUserName(event.target.value)}
+                                onChange={(event, value) => setUpdateUserName(event.target.value)}
                                 error={!isNameValid}
                                 helperText={!isNameValid ? 'Name must have more than 5 characters' : ''}
                             />
@@ -682,7 +739,7 @@ function AdAccount() {
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'right', alignItems: 'center', gap: 1 }}>
                             <Button variant="outlined" onClick={handleCloseModalForStaff}>Close</Button>
-                            <Button variant="contained" type="submit"  onClick={() => handleUpdateUser()}>
+                            <Button variant="contained" type="submit" onClick={() => handleUpdateUser()}>
                                 Save
                             </Button>
                         </Box>
