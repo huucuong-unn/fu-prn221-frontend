@@ -492,7 +492,7 @@ function AdCounter() {
                                     cursor: 'pointer',
                                 },
                             }}
-                            onDoubleClick={() => handleOpenModal(counter.id)} // Pass counter.id here
+                            onClick={() => handleOpenModal(counter.id)} // Pass counter.id here
                         >
                             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flex: '1 0 auto' }}>
@@ -557,7 +557,7 @@ function AdCounter() {
                                         cursor: 'pointer',
                                     },
                                 }}
-                                onClick={() => handleOpenModalForStaff()}
+                                // onClick={() => handleOpenModalForStaff()}
                             >
                                 <TableCell component="th" scope="row">
                                     {index + 1}
@@ -585,7 +585,7 @@ function AdCounter() {
                                     />
                                 </TableCell>
                                 <TableCell align="left">
-                                    {staff.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                    {staff.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}
                                 </TableCell>
                             </TableRow>
                         ))}
