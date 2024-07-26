@@ -55,7 +55,7 @@ function AdRequest() {
 
     const handleApprove = async (id, status) => {
         const approve = await RequestAPI.changeStatus({
-            id: "a34c7f8d-90e5-473b-a6c2-f59317e8b45c",
+            id: id,
             status: status
         })
         setIsChangeStatus(true);
@@ -63,7 +63,7 @@ function AdRequest() {
 
     const handleReject = async (id, status) => {
         const approve = await RequestAPI.changeStatus({
-            id: "a34c7f8d-90e5-473b-a6c2-f59317e8b45c",
+            id: id,
             status: status
         })
         setIsChangeStatus(true);
@@ -128,10 +128,13 @@ function AdRequest() {
                                     }}
                                 /></TableCell>
                                 <TableCell align="left">
-                                    <Box sx={{ display: "flex", justifyContent: "left", alignItems: "center", gap: 2 }}>
-                                        <Button variant='contained' color='success' onClick={() => handleApprove(request.id, "APPROVE")}>Approve</Button>
-                                        <Button variant='contained' color='error' onClick={() => handleReject(request.id, "REJECT")}>Reject</Button>
-                                    </Box>
+                                    {request.status === 'PENDING' ?
+                                        <Box sx={{ display: "flex", justifyContent: "left", alignItems: "center", gap: 2 }}>
+                                            <Button variant='contained' color='success' onClick={() => handleApprove(request.id, "APPROVE")}>Approve</Button>
+                                            <Button variant='contained' color='error' onClick={() => handleReject(request.id, "REJECT")}>Reject</Button>
+                                        </Box> : <>No Action</>
+                                    }
+
                                 </TableCell>
                             </TableRow>
                         ))}
