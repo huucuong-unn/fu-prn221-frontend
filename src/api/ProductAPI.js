@@ -31,6 +31,9 @@ const ProductAPI = {
         const authorizedConfig = this.addAuthorizationHeader({ data }, includeAuthorization);
         return axiosClient.put(url, authorizedConfig);
     },
+    updateProductStatus(id, includeAuthorization = false) {
+        return axiosClient.put(`/v1/product/update-status/${id}`);
+    },
 };
 
 export default ProductAPI;
