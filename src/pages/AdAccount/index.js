@@ -68,6 +68,28 @@ function AdAccount() {
         password: '',
         role: ''
     });
+    const [isCreateUser, setIsCreateUser] = useState(false);
+
+    const handleStatusChange = async (staffId, currentStatus) => {
+        const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+        try {
+            // Make API call to change status
+            await AccountAPI.changeStatus(staffId);
+
+            // Update local state to reflect the new status
+            setStaffs(prevStaffs => prevStaffs.map(staff =>
+                staff.id === staffId
+                    ? { ...staff, status: newStatus }
+                    : staff
+            ));
+            window.location.reload();
+        } catch (error) {
+            // Handle API call error
+            console.error('Failed to update status:', error);
+        }
+    };
+
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -185,6 +207,7 @@ function AdAccount() {
                 console.log('Staff list:', updatedStaffList);
                 setStaffs(updatedStaffList);
                 setUserCounters(userCounterData);
+                setIsCreateUser(false);
 
             } catch (error) {
                 setError(error.message);
@@ -194,10 +217,57 @@ function AdAccount() {
         };
 
         fetchData();
-    }, [page, rowsPerPage]);
+    }, [page, rowsPerPage, isCreateUser]);
 
 
 
+    const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
+        ({ theme }) => ({
+            width: 42,
+            height: 26,
+            padding: 0,
+            '& .MuiSwitch-switchBase': {
+                padding: 0,
+                margin: 2,
+                transitionDuration: '300ms',
+                '&.Mui-checked': {
+                    transform: 'translateX(16px)',
+                    color: '#fff',
+                    '& + .MuiSwitch-track': {
+                        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
+                        opacity: 1,
+                        border: 0,
+                    },
+                    '&.Mui-disabled + .MuiSwitch-track': {
+                        opacity: 0.5,
+                    },
+                },
+                '&.Mui-focusVisible .MuiSwitch-thumb': {
+                    color: '#33cf4d',
+                    border: '6px solid #fff',
+                },
+                '&.Mui-disabled .MuiSwitch-thumb': {
+                    color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600],
+                },
+                '&.Mui-disabled + .MuiSwitch-track': {
+                    opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+                },
+            },
+            '& .MuiSwitch-thumb': {
+                boxSizing: 'border-box',
+                width: 22,
+                height: 22,
+            },
+            '& .MuiSwitch-track': {
+                borderRadius: 26 / 2,
+                backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+                opacity: 1,
+                transition: theme.transitions.create(['background-color'], {
+                    duration: 500,
+                }),
+            },
+        }),
+    );
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -291,6 +361,8 @@ function AdAccount() {
                 },
                 body: JSON.stringify(newUser),
             });
+
+            setIsCreateUser(true);
 
             if (!response.ok) {
                 throw new Error('Failed to create user');

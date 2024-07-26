@@ -30,8 +30,44 @@ import MaterialAPI from '~/api/MaterialAPI';
 import ProductAPI from '~/api/ProductAPI';
 import ProductTypeAPI from '~/api/ProductTypeAPI';
 import StoneAPI from '~/api/StoneAPI';
+import RequestAPI from '~/api/RequestAPI';
 
 function AdRequest() {
+    const [requests, setRequests] = useState([]);
+    const [isChangeStatus, setIsChangeStatus] = useState(false);
+
+    useEffect(() => {
+        const getAll = async () => {
+            try {
+                const getAllRequest = await RequestAPI.getRequests();
+                setRequests(getAllRequest);
+                setIsChangeStatus(false);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getAll();
+    }, [isChangeStatus]);
+
+    useEffect(() => {
+        console.log(requests);
+    }, [requests])
+
+    const handleApprove = async (id, status) => {
+        const approve = await RequestAPI.changeStatus({
+            id: "a34c7f8d-90e5-473b-a6c2-f59317e8b45c",
+            status: status
+        })
+        setIsChangeStatus(true);
+    }
+
+    const handleReject = async (id, status) => {
+        const approve = await RequestAPI.changeStatus({
+            id: "a34c7f8d-90e5-473b-a6c2-f59317e8b45c",
+            status: status
+        })
+        setIsChangeStatus(true);
+    }
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
             <TableContainer component={Paper}>
@@ -59,30 +95,46 @@ function AdRequest() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow
-                            sx={{
-                                '&:last-child td, &:last-child th': { border: 0 },
-                                '&:hover': {
-                                    cursor: 'pointer',
-                                },
-                            }}
-                        >
-                            <TableCell component="th" scope="row">
-                                1
-                            </TableCell>
-                            <TableCell component="th" scope="row">
-                                Ronaldo
-                            </TableCell>
-                            <TableCell align="left">Messi</TableCell>
-                            <TableCell align="left">Neymar</TableCell>
-                            <TableCell align="left"><Chip label="AVAILABLE" sx={{ backgroundColor: "orange", color: "white", fontWeight: "bold" }}>AVAILABLE</Chip></TableCell>
-                            <TableCell align="left">
-                                <Box sx={{ display: "flex", justifyContent: "left", alignItems: "center", gap: 2 }}>
-                                    <Button variant='contained' color='success'>Approve</Button>
-                                    <Button variant='contained' color='error'>Reject</Button>
-                                </Box>
-                            </TableCell>
-                        </TableRow>
+                        {requests.map((request, index) => (
+                            <TableRow
+                                sx={{
+                                    '&:last-child td, &:last-child th': { border: 0 },
+                                    '&:hover': {
+                                        cursor: 'pointer',
+                                    },
+                                }}
+                            >
+                                <TableCell component="th" scope="row">
+                                    {index + 1}
+                                </TableCell>
+                                <TableCell component="th" scope="row">
+                                    {request.customerName}
+                                </TableCell>
+                                <TableCell align="left">{request.counterName}</TableCell>
+                                <TableCell align="left">{request.staffName}</TableCell>
+                                <TableCell align="left"><Chip
+                                    label={request.status}
+                                    sx={{
+                                        backgroundColor:
+                                            request.status === 'PENDING'
+                                                ? 'orange'
+                                                : request.status === 'APPROVE'
+                                                    ? 'green'
+                                                    : request.status === 'REJECT'
+                                                        ? 'red'
+                                                        : 'orange',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                    }}
+                                /></TableCell>
+                                <TableCell align="left">
+                                    <Box sx={{ display: "flex", justifyContent: "left", alignItems: "center", gap: 2 }}>
+                                        <Button variant='contained' color='success' onClick={() => handleApprove(request.id, "APPROVE")}>Approve</Button>
+                                        <Button variant='contained' color='error' onClick={() => handleReject(request.id, "REJECT")}>Reject</Button>
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
