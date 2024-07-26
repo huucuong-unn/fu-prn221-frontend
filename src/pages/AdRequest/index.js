@@ -30,8 +30,26 @@ import MaterialAPI from '~/api/MaterialAPI';
 import ProductAPI from '~/api/ProductAPI';
 import ProductTypeAPI from '~/api/ProductTypeAPI';
 import StoneAPI from '~/api/StoneAPI';
+import RequestAPI from '~/api/RequestAPI';
 
 function AdRequest() {
+    const [requests, setRequests] = useState([]);
+
+    useEffect(() => {
+        const getAll = async () => {
+            try {
+                const getAllRequest = await RequestAPI.getRequests();
+                setRequests(getAllRequest);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getAll();
+    }, []);
+
+    useEffect(() => {
+        console.log(requests);
+    }, [requests])
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 4 }}>
             <TableContainer component={Paper}>
