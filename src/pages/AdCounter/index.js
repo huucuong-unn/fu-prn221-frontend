@@ -313,25 +313,22 @@ function AdCounter() {
         }
     };
 
-    const handleChangeStaus = async () => {
+    const handleChangeStatus = async ( counterId) => {
         try {
-            // Assume staffId and counterId are available
-            const staffId = ""
-            const counterId = ""
-
-            // Call the API to change the status
-            await AccountAPI.changeUserCounterStatus(staffId, counterId);
 
 
-            await AccountAPI.changeStatus(counterId);
+            await CounterAPI.changeStatus(counterId);
 
             // Handle any success actions, e.g., update state, show notification
             console.log('Status changed successfully');
+
         } catch (error) {
             // Handle error, e.g., show notification
             console.error('Failed to change status', error);
+            // You can also set error state or display a message to the user
         }
     };
+
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
@@ -369,49 +366,61 @@ function AdCounter() {
             // Fetch the name of the counter
             setLoading(true);
             const counterResponse = await AccountAPI.getCounterById(counterId);
-            const counterDataForName = counterResponse;
-
-            setCurrentCounterName(counterDataForName.name);
+            setCurrentCounterName(counterResponse.name);
 
             // Fetch userCounter data
             const userCounterResponse = await AccountAPI.getUserCounterById(counterId);
             const userCounterData = userCounterResponse; // Access data from response
 
 
-            if (userCounterData.length > 0  ) {
+            if (userCounterData.length > 0) {
 
                 console.log("Hello");
-                // Extract staff IDs from userCounterData
-                const staffIds = userCounterData
+                // Extract active staff IDs from userCounterData
+                const activeStaffIds = userCounterData
                     .filter(userCounter => userCounter.status === "ACTIVE")
                     .map(userCounter => userCounter.staffId);
 
+
                 // Fetch staff details sequentially
                 const staffData = [];
-                for (const staffId of staffIds) {
+                for (const staffId of activeStaffIds) {
                     const staffResponse = await AccountAPI.getStaffById(staffId);
-
                     staffData.push(staffResponse);
                 }
                 console.log("STAFF", staffData)
 
 
-                // Set staff data to state
-                setStaffsData(staffData);
-            }
+                // Map and update staff data with incomeAtThisCounter
+                const updatedStaffList = staffData.map(staff => {
+                    const userCounter = userCounterData.find(uc => uc.staffId === staff.id);
+                    let incomeAtThisCounter = 0;
 
+                    if (userCounter && userCounter.status.toLowerCase() === 'active') {
+                        incomeAtThisCounter = userCounter.income;
+                        console.log(incomeAtThisCounter);
+                    }
+
+                    return {
+                        ...staff,
+                        incomeAtThisCounter
+                    };
+
+                });
+
+                setStaffsData(updatedStaffList);
+                setUserCounters(userCounterData);
+            }
         } catch (error) {
             setError(error.message);
         } finally {
             setLoading(false);
         }
     };
-
-
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentCounterName();
-        setStaffsData();
+        setStaffsData()
 
     };
 
@@ -483,7 +492,7 @@ function AdCounter() {
                                     cursor: 'pointer',
                                 },
                             }}
-                            onClick={() => handleOpenModal(counter.id)} // Pass counter.id here
+                            onDoubleClick={() => handleOpenModal(counter.id)} // Pass counter.id here
                         >
                             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flex: '1 0 auto' }}>
@@ -495,10 +504,17 @@ function AdCounter() {
                                     </Typography>
                                 </CardContent>
                             </Box>
-                            <FormControlLabel
-                                control={<IOSSwitch sx={{ m: 1 }} checked={counter?.status === 'ACTIVE'} />}
-                                label={counter?.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                            />
+                            {/*<FormControlLabel*/}
+                            {/*    control={*/}
+                            {/*        <IOSSwitch*/}
+                            {/*            sx={{ m: 1 }}*/}
+                            {/*            checked={counter?.status === 'ACTIVE'}*/}
+                            {/*            onChange={() => handleChangeStatus( counter.id)}*/}
+                            {/*        />*/}
+                            {/*    }*/}
+                            {/*    label={counter?.status === 'ACTIVE' ? 'Active' : 'Inactive'}*/}
+                            {/*/>*/}
+
                         </Card>
                     </Grid>
                 ))}
@@ -662,10 +678,10 @@ function AdCounter() {
                                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                             <CardContent sx={{ flex: '1 0 auto' }}>
                                                 <Typography component="div" variant="h5">
-                                                    {staff?.name}
+                                                  Staff name:{staff?.name}
                                                 </Typography>
                                                 <Typography variant="subtitle1" color="text.secondary" component="div">
-                                                    {formatCurrency(staff?.income ? staff?.income : '0.00')}
+                                                Income at this counter: {formatCurrency(staff?.incomeAtThisCounter ? staff?.incomeAtThisCounter : '0.00')}
                                                 </Typography>
                                             </CardContent>
                                         </Box>
