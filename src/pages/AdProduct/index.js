@@ -538,7 +538,7 @@ function AdProduct() {
                                 </TableCell>
                                 {account?.role === 'ADMIN' ? (
                                     <TableCell align="left">
-                                        {product.status === "BUYBACK" || product.status === "AVAILABLE" || product.status === "INAVAILABLE" ? <Button variant='contained' color='success' onClick={() => handleUpdateStatus(product.id)}>Change</Button> : <></>}
+                                        {product.status === "BUYBACK" || product.status === "AVAILABLE" || product.status === "INAVAILABLE" ? <Button variant='contained' color='success' onClick={() => handleUpdateStatus(product.id)}>Change</Button> : <>No Action</>}
                                     </TableCell>
                                 ) : (<></>)}
 
