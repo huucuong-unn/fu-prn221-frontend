@@ -16,6 +16,10 @@ const RequestPromotionAPI = {
         return axiosClient.get(`/v1/request-promotions`);
     },
 
+    getById(id) {
+
+    },
+
     create(data) {
         return axiosClient.post('/v1/request-promotion/create', data);
     }
