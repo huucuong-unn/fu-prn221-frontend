@@ -24,7 +24,7 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    TablePagination,
+    TablePagination, Pagination, PaginationItem,
 } from '@mui/material';
 
 
@@ -36,9 +36,10 @@ import { useEffect, useState } from 'react';
 
 
 import AccountAPI from '~/api/AccountAPI';
-import { getCounterById, getStaffById } from '~/api/OldMethod/getByID';
 import UserCounterAPI from '~/api/UserCounterAPI';
 import CounterAPI from '~/api/CounterAPI';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 
 function AdCounter() {
@@ -58,9 +59,7 @@ function AdCounter() {
     const [userCounters, setUserCounters] = useState([]);
     const [newCounterName, setNewCounterName] = useState('');
     const [currentCounterName, setCurrentCounterName] = useState('');
-    const [countersData, setCountersData] = useState([]);
     const [staffsData, setStaffsData] = useState([]);
-    const [staffModalData, setStaffsModalData] = useState([]);
     const [selectedCounterId, setSelectedCounterId] = useState(null);
     const [selectedStaffId, setSelectedStaffId] = useState(null);
     const [updateCounterName, setUpdateCounterName] = useState();
@@ -69,44 +68,53 @@ function AdCounter() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    //
-    // const handleOpenCounterModal = async () => {
-    //     setIsModalOpen(true);
-    //     try {
-    //         setLoading(true);
-    //         const userCounterData = await AccountAPI.getUserCounterData(); // Fetch userCounter data
-    //
-    //         if (userCounterData.userCounters.length > 0) {
-    //             const counterPromises = userCounterData.userCounters.map(async (userCounter) => {
-    //                 const counterId = userCounter.counterId;
-    //                 const staffId = userCounter.staffId;
-    //
-    //                 // Fetch counter and staff details based on IDs
-    //                 const counterData = await getCounterById(counterId);
-    //                 const staffData = await getStaffById(staffId);
-    //
-    //                 setCurrentCounterName(counterData.name);
-    //
-    //                 return { counterData, staffData };
-    //             });
-    //
-    //             const results = await Promise.all(counterPromises);
-    //
-    //             // Separate countersData and staffsData from results
-    //             const fetchedCounters = results.map((result) => result.counterData);
-    //             const fetchedStaffs = results.map((result) => result.staffData);
-    //
-    //             setCountersData(fetchedCounters);
-    //             setStaffsData(fetchedStaffs);
-    //         }
-    //     } catch (error) {
-    //         setError(error.message);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-
+    const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
+        ({ theme }) => ({
+            width: 42,
+            height: 26,
+            padding: 0,
+            '& .MuiSwitch-switchBase': {
+                padding: 0,
+                margin: 2,
+                transitionDuration: '300ms',
+                '&.Mui-checked': {
+                    transform: 'translateX(16px)',
+                    color: '#fff',
+                    '& + .MuiSwitch-track': {
+                        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
+                        opacity: 1,
+                        border: 0,
+                    },
+                    '&.Mui-disabled + .MuiSwitch-track': {
+                        opacity: 0.5,
+                    },
+                },
+                '&.Mui-focusVisible .MuiSwitch-thumb': {
+                    color: '#33cf4d',
+                    border: '6px solid #fff',
+                },
+                '&.Mui-disabled .MuiSwitch-thumb': {
+                    color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600],
+                },
+                '&.Mui-disabled + .MuiSwitch-track': {
+                    opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
+                },
+            },
+            '& .MuiSwitch-thumb': {
+                boxSizing: 'border-box',
+                width: 22,
+                height: 22,
+            },
+            '& .MuiSwitch-track': {
+                borderRadius: 26 / 2,
+                backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+                opacity: 1,
+                transition: theme.transitions.create(['background-color'], {
+                    duration: 500,
+                }),
+            },
+        }),
+    );
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -175,88 +183,6 @@ function AdCounter() {
     }, []);
 
 
-
-    const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
-        ({ theme }) => ({
-            width: 42,
-            height: 26,
-            padding: 0,
-            '& .MuiSwitch-switchBase': {
-                padding: 0,
-                margin: 2,
-                transitionDuration: '300ms',
-                '&.Mui-checked': {
-                    transform: 'translateX(16px)',
-                    color: '#fff',
-                    '& + .MuiSwitch-track': {
-                        backgroundColor: theme.palette.mode === 'dark' ? '#2ECA45' : '#65C466',
-                        opacity: 1,
-                        border: 0,
-                    },
-                    '&.Mui-disabled + .MuiSwitch-track': {
-                        opacity: 0.5,
-                    },
-                },
-                '&.Mui-focusVisible .MuiSwitch-thumb': {
-                    color: '#33cf4d',
-                    border: '6px solid #fff',
-                },
-                '&.Mui-disabled .MuiSwitch-thumb': {
-                    color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600],
-                },
-                '&.Mui-disabled + .MuiSwitch-track': {
-                    opacity: theme.palette.mode === 'light' ? 0.7 : 0.3,
-                },
-            },
-            '& .MuiSwitch-thumb': {
-                boxSizing: 'border-box',
-                width: 22,
-                height: 22,
-            },
-            '& .MuiSwitch-track': {
-                borderRadius: 26 / 2,
-                backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
-                opacity: 1,
-                transition: theme.transitions.create(['background-color'], {
-                    duration: 500,
-                }),
-            },
-        }),
-    );
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        const email = event.target.email.value;
-        const name = event.target.name.value;
-        const phoneNumber = event.target.phoneNumber.value;
-        const password = event.target.password.value;
-
-        if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(email)) {
-            setIsEmailValid(false);
-        } else {
-            setIsEmailValid(true);
-        }
-
-        if (name.length < 5) {
-            setIsNameValid(false);
-        } else {
-            setIsNameValid(true);
-        }
-
-        if (password.length < 5) {
-            setIsPasswordValid(false);
-        } else {
-            setIsPasswordValid(true);
-        }
-
-        if (!/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(phoneNumber)) {
-            setIsPhoneNumberValid(false);
-        } else {
-            setIsPhoneNumberValid(true);
-        }
-    };
-
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
     };
@@ -313,33 +239,27 @@ function AdCounter() {
         }
     };
 
-    const handleChangeStaus = async () => {
+    const handleChangeStatus = async ( counterId) => {
         try {
-            // Assume staffId and counterId are available
-            const staffId = ""
-            const counterId = ""
-
-            // Call the API to change the status
-            await AccountAPI.changeUserCounterStatus(staffId, counterId);
 
 
-            await AccountAPI.changeStatus(counterId);
+            await CounterAPI.changeStatus(counterId);
 
             // Handle any success actions, e.g., update state, show notification
             console.log('Status changed successfully');
+
         } catch (error) {
             // Handle error, e.g., show notification
             console.error('Failed to change status', error);
+            // You can also set error state or display a message to the user
         }
     };
+
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
     };
 
-    const handleOpenModalForStaff = () => {
-        setIsModalOpenForStaff(true);
-    };
 
     const handleCloseModalForStaff = () => {
         setIsModalOpenForStaff(false);
@@ -369,49 +289,61 @@ function AdCounter() {
             // Fetch the name of the counter
             setLoading(true);
             const counterResponse = await AccountAPI.getCounterById(counterId);
-            const counterDataForName = counterResponse;
-
-            setCurrentCounterName(counterDataForName.name);
+            setCurrentCounterName(counterResponse.name);
 
             // Fetch userCounter data
             const userCounterResponse = await AccountAPI.getUserCounterById(counterId);
             const userCounterData = userCounterResponse; // Access data from response
 
 
-            if (userCounterData.length > 0  ) {
+            if (userCounterData.length > 0) {
 
                 console.log("Hello");
-                // Extract staff IDs from userCounterData
-                const staffIds = userCounterData
+                // Extract active staff IDs from userCounterData
+                const activeStaffIds = userCounterData
                     .filter(userCounter => userCounter.status === "ACTIVE")
                     .map(userCounter => userCounter.staffId);
 
+
                 // Fetch staff details sequentially
                 const staffData = [];
-                for (const staffId of staffIds) {
+                for (const staffId of activeStaffIds) {
                     const staffResponse = await AccountAPI.getStaffById(staffId);
-
                     staffData.push(staffResponse);
                 }
                 console.log("STAFF", staffData)
 
 
-                // Set staff data to state
-                setStaffsData(staffData);
-            }
+                // Map and update staff data with incomeAtThisCounter
+                const updatedStaffList = staffData.map(staff => {
+                    const userCounter = userCounterData.find(uc => uc.staffId === staff.id);
+                    let incomeAtThisCounter = 0;
 
+                    if (userCounter && userCounter.status.toLowerCase() === 'active') {
+                        incomeAtThisCounter = userCounter.income;
+                        console.log(incomeAtThisCounter);
+                    }
+
+                    return {
+                        ...staff,
+                        incomeAtThisCounter
+                    };
+
+                });
+
+                setStaffsData(updatedStaffList);
+                setUserCounters(userCounterData);
+            }
         } catch (error) {
             setError(error.message);
         } finally {
             setLoading(false);
         }
     };
-
-
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentCounterName();
-        setStaffsData();
+        setStaffsData()
 
     };
 
@@ -495,10 +427,17 @@ function AdCounter() {
                                     </Typography>
                                 </CardContent>
                             </Box>
-                            <FormControlLabel
-                                control={<IOSSwitch sx={{ m: 1 }} checked={counter?.status === 'ACTIVE'} />}
-                                label={counter?.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                            />
+                            {/*<FormControlLabel*/}
+                            {/*    control={*/}
+                            {/*        <IOSSwitch*/}
+                            {/*            sx={{ m: 1 }}*/}
+                            {/*            checked={counter?.status === 'ACTIVE'}*/}
+                            {/*            onChange={() => handleChangeStatus( counter.id)}*/}
+                            {/*        />*/}
+                            {/*    }*/}
+                            {/*    label={counter?.status === 'ACTIVE' ? 'Active' : 'Inactive'}*/}
+                            {/*/>*/}
+
                         </Card>
                     </Grid>
                 ))}
@@ -541,7 +480,7 @@ function AdCounter() {
                                         cursor: 'pointer',
                                     },
                                 }}
-                                onClick={() => handleOpenModalForStaff()}
+                                // onClick={() => handleOpenModalForStaff()}
                             >
                                 <TableCell component="th" scope="row">
                                     {index + 1}
@@ -569,7 +508,7 @@ function AdCounter() {
                                     />
                                 </TableCell>
                                 <TableCell align="left">
-                                    {staff.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                    {staff.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -662,10 +601,10 @@ function AdCounter() {
                                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                             <CardContent sx={{ flex: '1 0 auto' }}>
                                                 <Typography component="div" variant="h5">
-                                                    {staff?.name}
+                                                  Staff name:{staff?.name}
                                                 </Typography>
                                                 <Typography variant="subtitle1" color="text.secondary" component="div">
-                                                    {formatCurrency(staff?.income ? staff?.income : '0.00')}
+                                                Income at this counter: {formatCurrency(staff?.incomeAtThisCounter ? staff?.incomeAtThisCounter : '0.00')}
                                                 </Typography>
                                             </CardContent>
                                         </Box>
@@ -871,8 +810,43 @@ function AdCounter() {
                     </Box>
                 </Box>
             </Modal>
+
         </Box>
     );
 }
 
 export default AdCounter;
+
+
+/* const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const email = event.target.email.value;
+        const name = event.target.name.value;
+        const phoneNumber = event.target.phoneNumber.value;
+        const password = event.target.password.value;
+
+        if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(email)) {
+            setIsEmailValid(false);
+        } else {
+            setIsEmailValid(true);
+        }
+
+        if (name.length < 5) {
+            setIsNameValid(false);
+        } else {
+            setIsNameValid(true);
+        }
+
+        if (password.length < 5) {
+            setIsPasswordValid(false);
+        } else {
+            setIsPasswordValid(true);
+        }
+
+        if (!/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(phoneNumber)) {
+            setIsPhoneNumberValid(false);
+        } else {
+            setIsPhoneNumberValid(true);
+        }
+    };*/
