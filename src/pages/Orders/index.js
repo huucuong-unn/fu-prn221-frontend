@@ -87,7 +87,7 @@ function AdOrder() {
         }
     };
 
-    const handleReloadRequestStatus = async () => {
+    const handleReloadRequestStatus = async (requestPromotion) => {
         try {
             const response = await RequestPromotionAPI.getById(requestPromotion.id);
             setRequestStatus(response?.status);
@@ -298,7 +298,7 @@ function AdOrder() {
             <p>Tên khách hàng: ${order?.customer?.name}</p>
             <p>Số điện thoại: ${order?.customer?.phone}</p>
             <p>Thời gian giao dịch: ${new Date(order?.createdDate).toLocaleString()}</p>
-            <p>${order.id}</p>
+            <p>Mã đơn hàng: ${order.id}</p>
             <h2>Danh sách sản phẩm:</h2>
         `;
 
